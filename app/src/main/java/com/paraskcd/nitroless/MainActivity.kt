@@ -20,6 +20,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.paraskcd.nitroless.elements.TopBar
 import com.paraskcd.nitroless.ui.theme.NitrolessTheme
 
 sealed class HomeScreens(val title: String) {
@@ -47,16 +51,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(color = MaterialTheme.colors.primary)
-                    ) {
-                        TopBar(buttonIcon = Icons.Filled.Menu, onButtonClicked = {})
-                        About()
-                    }
-
+                    Navigation()
                 }
             }
         }
@@ -64,35 +59,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TopBar(buttonIcon: ImageVector, onButtonClicked: () -> Unit) {
-    TopAppBar(
-        elevation = 12.dp,
-        title = {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Image(
-                    painter = painterResource(id = R.drawable.banner),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(248.dp)
-                        .padding(horizontal = 10.dp),
-                    contentScale = ContentScale.Fit,
-                    alignment = Alignment.Center
-                )
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(Icons.Filled.Info, contentDescription = "")
-                }
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = { onButtonClicked() } ) {
-                Icon(buttonIcon, contentDescription = "")
-            }
-        },
-        backgroundColor = MaterialTheme.colors.primaryVariant
-    )
+fun Navigation() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "home" ) {
+        composable("home") { Home(openDrawer = { /* TODO */ }, navController = navController) }
+        composable("about") { About(navController = navController) }
+    }
 }
 
 @Composable
