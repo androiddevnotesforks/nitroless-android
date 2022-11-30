@@ -19,6 +19,7 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
+import com.paraskcd.nitroless.elements.Container
 import com.paraskcd.nitroless.elements.TopBar
 import com.paraskcd.nitroless.utils.NetworkImage
 
@@ -44,14 +45,7 @@ fun About(navController: NavHostController) {
             .background(color = MaterialTheme.colors.background)
         ) {
             item {
-                Card(
-                    backgroundColor = MaterialTheme.colors.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+                Container {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -70,14 +64,7 @@ fun About(navController: NavHostController) {
                 }
             }
             item {
-                Card(
-                    backgroundColor = MaterialTheme.colors.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+                Container {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -132,14 +119,7 @@ fun About(navController: NavHostController) {
                 }
             }
             item {
-                Card(
-                    backgroundColor = MaterialTheme.colors.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+                Container {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()

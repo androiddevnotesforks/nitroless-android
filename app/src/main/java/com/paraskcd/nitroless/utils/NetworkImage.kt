@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
@@ -22,7 +23,7 @@ fun NetworkImage(imageURL: String, imageDescription: String, size: Dp, shape: Sh
         model = ImageRequest.Builder(LocalContext.current).data(imageURL).build()
     )
 
-    Box {
+    Box(contentAlignment = Alignment.Center) {
         Image(
             painter = painter,
             contentDescription = imageDescription,

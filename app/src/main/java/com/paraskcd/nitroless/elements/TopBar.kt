@@ -32,8 +32,7 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
                         contentDescription = "Logo",
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(248.dp)
-                            .padding(horizontal = 10.dp),
+                            .width(248.dp),
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     )
