@@ -1,4 +1,4 @@
-package com.paraskcd.nitroless.elements
+package com.paraskcd.nitroless.components
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.*

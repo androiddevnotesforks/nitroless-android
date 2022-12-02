@@ -1,8 +1,5 @@
 package com.paraskcd.nitroless
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
@@ -11,14 +8,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.*
 import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.navigation.*
-import com.paraskcd.nitroless.elements.*
+import com.paraskcd.nitroless.components.*
 
 @Composable
 fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, frequentlyUsedEmotes: SnapshotStateList<String>, animateDrawer: Dp, isDrawerActive: Boolean ) {

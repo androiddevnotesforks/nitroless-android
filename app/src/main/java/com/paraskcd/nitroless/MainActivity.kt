@@ -11,10 +11,12 @@ import androidx.compose.runtime.snapshots.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import androidx.navigation.compose.*
-import com.paraskcd.nitroless.elements.Drawer
+import com.paraskcd.nitroless.components.Drawer
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.utils.RememberMutableStateListOf
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
             var frequentlyUsedEmotes = RememberMutableStateListOf<String>()
             var isHomeActive by remember { mutableStateOf(false) }
             var isDrawerActive by remember { mutableStateOf(false) }
-            var isCommunityReposActive by remember { mutableStateOf(false) }
+//            var isCommunityReposActive by remember { mutableStateOf(false) }
             val animateDrawer: Dp by animateDpAsState(
                 if (isDrawerActive) 72.dp else 0.dp
             )
@@ -31,9 +33,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Navigation( openDrawer = { isDrawerActive = it }, frequentlyUsedEmotes = frequentlyUsedEmotes, animateDrawer = animateDrawer, isDrawerActive = isDrawerActive )
-                        Drawer(isHomeActive = isHomeActive, isDrawerActive = isDrawerActive, openDrawer = { isDrawerActive = it })
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Navigation(
+                            openDrawer = { isDrawerActive = it },
+                            frequentlyUsedEmotes = frequentlyUsedEmotes,
+                            animateDrawer = animateDrawer,
+                            isDrawerActive = isDrawerActive
+                        )
+                        Drawer(
+                            isHomeActive = isHomeActive,
+                            isDrawerActive = isDrawerActive,
+                            openDrawer = { isDrawerActive = it }
+                        )
                     }
                 }
             }
@@ -46,7 +59,21 @@ fun Navigation(openDrawer: (Boolean) -> Unit, frequentlyUsedEmotes: SnapshotStat
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
-        composable("home") { Home( openDrawer = { openDrawer(true) }, closeDrawer = { openDrawer(false) }, navController = navController, frequentlyUsedEmotes = frequentlyUsedEmotes, animateDrawer = animateDrawer, isDrawerActive = isDrawerActive ) }
-        composable("about") { About(navController = navController) }
+        composable("home")
+            {
+                Home(
+                    openDrawer = { openDrawer(true) },
+                    closeDrawer = { openDrawer(false) },
+                    navController = navController,
+                    frequentlyUsedEmotes = frequentlyUsedEmotes,
+                    animateDrawer = animateDrawer,
+                    isDrawerActive = isDrawerActive
+                )
+            }
+        composable("about") {
+            About(
+                navController = navController
+            )
+        }
     }
 }

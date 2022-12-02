@@ -19,8 +19,8 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
-import com.paraskcd.nitroless.elements.Container
-import com.paraskcd.nitroless.elements.TopBar
+import com.paraskcd.nitroless.components.Container
+import com.paraskcd.nitroless.components.TopBar
 import com.paraskcd.nitroless.utils.NetworkImage
 
 @Composable
