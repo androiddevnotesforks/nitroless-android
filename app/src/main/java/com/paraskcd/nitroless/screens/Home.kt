@@ -17,7 +17,7 @@ import androidx.navigation.*
 import com.paraskcd.nitroless.components.*
 
 @Composable
-fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, frequentlyUsedEmotes: SnapshotStateList<String>, animateDrawer: Dp, isDrawerActive: Boolean ) {
+fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, animateDrawer: Dp, isDrawerActive: Boolean ) {
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -70,9 +70,8 @@ fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHos
                             Text("Frequently Used Emotes", fontSize = 20.sp, fontWeight = FontWeight(700))
                         }
                         Spacer(modifier = Modifier.height(5.dp))
-                        if (frequentlyUsedEmotes.isEmpty()) {
-                            Text(text = "Start using Nitroless to show your frequently used emotes here.")
-                        }
+                        //TODO Add Frequently Used Emotes View Model
+                        Text(text = "Start using Nitroless to show your frequently used emotes here.")
                     }
                 }
             }
