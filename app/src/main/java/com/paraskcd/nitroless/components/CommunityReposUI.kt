@@ -1,6 +1,5 @@
 package com.paraskcd.nitroless.components
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,8 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,14 +30,24 @@ import com.paraskcd.nitroless.R
 import com.paraskcd.nitroless.model.Repo
 import com.paraskcd.nitroless.model.RepoTable
 import com.paraskcd.nitroless.ui.theme.AccentColor
+import com.paraskcd.nitroless.ui.theme.Success
 import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
+import java.util.UUID
 
 @Composable
 fun CommunityReposUI(isCommunityReposActive: Boolean, viewModel: RepoViewModel, openCommunityRepos: (Boolean) -> Unit) {
     val density = LocalDensity.current
     val communityRepos = viewModel.communityRepos.observeAsState()
     val loadingCommunityRepos = viewModel.loadingCommunityRepos.observeAsState()
+    val repos = viewModel.repos.observeAsState()
+    val loadingRepos = viewModel.loadingRepos.observeAsState()
+
+    var refreshCount by remember { mutableStateOf(1) }
+
+    LaunchedEffect(key1 = refreshCount) {
+        viewModel.getReposData()
+    }
 
     AnimatedVisibility(
         visible = isCommunityReposActive,
@@ -82,15 +92,34 @@ fun CommunityReposUI(isCommunityReposActive: Boolean, viewModel: RepoViewModel, 
             }
             if (loadingCommunityRepos.value == true) {
                 item {
-                    Column(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = MaterialTheme.colors.onPrimary)
                     }
                 }
             } else {
                 if (communityRepos.value != null) {
                     items(communityRepos.value!!) {
                             communityRepo ->
-                        CommunityRepoRow(communityRepo = communityRepo, onAddRepo = {}, onRemoveRepo = {}, modifier = Modifier.padding(10.dp))
+                        CommunityRepoRow(
+                            communityRepo = communityRepo,
+                            onAddRepo = {
+                                viewModel.addRepo(
+                                    repo = RepoTable(repoURL = communityRepo.url!!)
+                                )
+                                refreshCount++
+                            },
+                            onRemoveRepo = {
+                               viewModel.deleteRepo(
+                                   repo = it
+                               )
+                                refreshCount++
+                            },
+                            modifier = Modifier.padding(10.dp),
+                            loadingRepos = loadingRepos.value!!,
+                            repos = repos.value!!
+                        )
                     }
                 }
             }
@@ -99,7 +128,7 @@ fun CommunityReposUI(isCommunityReposActive: Boolean, viewModel: RepoViewModel, 
 }
 
 @Composable
-fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRepo: (RepoTable) -> Unit, onRemoveRepo: (RepoTable) -> Unit) {
+fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRepo: () -> Unit, onRemoveRepo: (RepoTable) -> Unit, loadingRepos: Boolean, repos: List<Repo>) {
     val context = LocalContext.current
     ContainerPill {
         Box(modifier = modifier) {
@@ -107,29 +136,69 @@ fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRe
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     NetworkImage(imageURL = communityRepo.url + communityRepo.icon, imageDescription = communityRepo.name, size = 50.dp, shape = CircleShape,)
                     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-                        Text(text = communityRepo.name, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                        Text(text = communityRepo.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         if (communityRepo.author != null) {
                             Text(text = "By ${communityRepo.author}", fontWeight = FontWeight.Light, fontSize = 12.sp)
                         }
                         Text(text = "${communityRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp)
                     }
                 }
-                IconButton(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .clip(CircleShape)
-                        .background(
-                            AccentColor
-                        )
-                        .size(32.dp)
-                ) {
-                    Icon(
-                        Icons.Rounded.AddCircle,
-                        contentDescription = "",
-                        modifier = Modifier.padding(5.dp),
-                        tint = Color.White
+                if(loadingRepos == true) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colors.onPrimary,
+                        modifier = Modifier.padding(10.dp).size(32.dp)
                     )
+                } else {
+                    var exists: Boolean = false
+                    var id: UUID = UUID.randomUUID()
+                    repos.forEach { repo ->
+                        if (repo.url.equals(communityRepo.url)) {
+                            exists = true
+                            id = repo.id!!
+                        }
+                    }
+
+                    if (exists) {
+                        IconButton(
+                            onClick = {
+                                onRemoveRepo(RepoTable(id = id, repoURL = communityRepo.url!!))
+                            },
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    MaterialTheme.colors.primaryVariant
+                                )
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.Check,
+                                contentDescription = "",
+                                modifier = Modifier.padding(5.dp),
+                                tint = Success
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = {
+                                onAddRepo()
+                            },
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    AccentColor
+                                )
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.AddCircle,
+                                contentDescription = "",
+                                modifier = Modifier.padding(5.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
                 }
             }
         }

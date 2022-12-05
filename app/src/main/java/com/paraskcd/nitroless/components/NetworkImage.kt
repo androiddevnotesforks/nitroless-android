@@ -2,7 +2,9 @@ package com.paraskcd.nitroless.utils
 
 import android.os.Build.VERSION.SDK_INT
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -40,7 +42,7 @@ fun NetworkImage(imageURL: String, imageDescription: String, size: Dp, shape: Sh
         Image(
             painter = painter,
             contentDescription = imageDescription,
-            modifier = Modifier.size(size).clip(shape)
+            modifier = Modifier.padding(10.dp).clip(shape).size(size).background(MaterialTheme.colors.secondary)
         )
         if(painter.state is AsyncImagePainter.State.Loading) {
             CircularProgressIndicator(

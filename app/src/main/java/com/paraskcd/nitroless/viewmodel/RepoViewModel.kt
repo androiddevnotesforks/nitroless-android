@@ -12,6 +12,7 @@ import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.network.ReposApi
 import com.paraskcd.nitroless.repository.CommunityReposRepository
 import com.paraskcd.nitroless.repository.RepoRepository
+import com.paraskcd.nitroless.utils.UUIDConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +31,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     val communityReposData: MutableState<DataOrException<CommunityRepos, Boolean, Exception>> = mutableStateOf(DataOrException(null, true, Exception("")))
 
     private val _communityRepos = MutableLiveData<List<Repo>>()
-    private val _loadingCommunityRepos = MutableLiveData<Boolean>()
+    private val _loadingCommunityRepos = MutableLiveData<Boolean>(true)
 
     val communityRepos: LiveData<List<Repo>>
         get() = _communityRepos
@@ -37,13 +39,19 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         get() = _loadingCommunityRepos
 
     private val _repoURLS = MutableStateFlow<List<RepoTable>>(emptyList())
-    private val _repos = MutableStateFlow<List<Repo>>(emptyList())
-    private val _frequentlyUsedEmotes = MutableStateFlow<List<FrequentlyUsedEmotesTable>>(emptyList())
-    private val _favouriteEmotes = MutableStateFlow<List<FavouriteEmotesTable>>(emptyList())
-
     val repoURLS = _repoURLS.asStateFlow()
-    val repos = _repos.asStateFlow()
+
+    private val _repos = MutableLiveData<List<Repo>>()
+    val repos: LiveData<List<Repo>>
+        get() = _repos
+    private val _loadingRepos = MutableLiveData(true)
+    val loadingRepos: LiveData<Boolean>
+        get() = _loadingRepos
+
+    private val _frequentlyUsedEmotes = MutableStateFlow<List<FrequentlyUsedEmotesTable>>(emptyList())
     val frequentlyUsedEmotes = _frequentlyUsedEmotes.asStateFlow()
+
+    private val _favouriteEmotes = MutableStateFlow<List<FavouriteEmotesTable>>(emptyList())
     val favouriteEmotes = _favouriteEmotes.asStateFlow()
 
     init {
@@ -53,8 +61,8 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 listOfRepos ->
                 if (listOfRepos.isEmpty()) {
                     _repoURLS.value = emptyList()
-                    _repos.value = emptyList()
                 } else {
+                    Log.d("ListOfRepos: ", listOfRepos.toString())
                     _repoURLS.value = listOfRepos
                 }
             }
@@ -75,6 +83,25 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 }
             }
         }
+    }
+
+    suspend fun getReposData() {
+        _loadingRepos.value = true
+        var repoList = mutableListOf<Repo>()
+        repoURLS.value.forEachIndexed() { index, repo ->
+            val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
+            val api: ReposApi = retrofit.create(ReposApi::class.java)
+            val dataOrException = DataOrException<Repo, Boolean, Exception>()
+            var repoData = repository.getRepoData(dataOrException, api)
+
+            if (repoData.loading == false) {
+                repoData.data?.id = repo.id
+                repoData.data?.url = repo.repoURL
+                repoList.add(repoData.data!!)
+            }
+        }
+        _loadingRepos.value = false
+        _repos.value = repoList
     }
 
     fun getCommunityRepos() {
@@ -104,8 +131,35 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         }
     }
 
-    fun addRepo(repo: RepoTable) = viewModelScope.launch { repository.addRepo(repo) }
-    fun deleteRepo(repo: RepoTable) = viewModelScope.launch { repository.deleteRepo(repo) }
+    fun selectRepo(repo: Repo) {
+        viewModelScope.launch {
+            var newRepoList = mutableListOf<Repo>()
+            _repos.value?.forEach { rep ->
+                rep.selected = rep == repo
+                newRepoList.add(rep)
+            }
+            _repos.value = emptyList()
+            _repos.value = newRepoList
+        }
+    }
+
+    fun deselectAllRepos() {
+        viewModelScope.launch {
+            var newRepoList = mutableListOf<Repo>()
+            _repos.value?.forEach { rep ->
+                rep.selected = false
+                newRepoList.add(rep)
+            }
+            _repos.value = newRepoList
+        }
+    }
+
+    fun addRepo(repo: RepoTable) = viewModelScope.launch {
+        repository.addRepo(repo)
+    }
+    fun deleteRepo(repo: RepoTable) = viewModelScope.launch {
+        repository.deleteRepo(repo)
+    }
     fun addFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch { repository.addFrequentlyUsedEmote(emote) }
     fun deleteFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch { repository.deleteFrequentlyUsedEmote(emote) }
     fun addFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.addFavouriteEmote(emote) }

@@ -22,13 +22,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var isHomeActive by remember { mutableStateOf(false) }
+            var isHomeActive by remember { mutableStateOf(true) }
             var isDrawerActive by remember { mutableStateOf(false) }
             var isCommunityReposActive by remember { mutableStateOf(false) }
             val animateDrawer: Dp by animateDpAsState(
                 if (isDrawerActive) 72.dp else 0.dp
             )
             val viewModel: RepoViewModel = hiltViewModel()
+            
+            LaunchedEffect(key1 = Unit) {
+                viewModel.getReposData()
+            }
 
             NitrolessTheme {
                 Surface(
@@ -48,7 +52,9 @@ class MainActivity : ComponentActivity() {
                             isHomeActive = isHomeActive,
                             isDrawerActive = isDrawerActive,
                             openDrawer = { isDrawerActive = it },
-                            openCommunityRepos = { isCommunityReposActive = it }
+                            openCommunityRepos = { isCommunityReposActive = it },
+                            viewModel = viewModel,
+                            makeHomeActive = { isHomeActive = it }
                         )
                         CommunityReposUI(
                             isCommunityReposActive = isCommunityReposActive,

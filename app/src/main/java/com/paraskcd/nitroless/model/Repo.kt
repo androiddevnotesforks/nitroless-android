@@ -1,6 +1,9 @@
 package com.paraskcd.nitroless.model
 
+import java.util.UUID
+
 data class Repo(
+    var id: UUID?,
     var selected: Boolean = false,
     var url: String?,
     val author: String?,
