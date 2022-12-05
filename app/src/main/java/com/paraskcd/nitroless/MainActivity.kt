@@ -9,9 +9,12 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
+import com.paraskcd.nitroless.components.CommunityReposUI
 import com.paraskcd.nitroless.components.Drawer
 import com.paraskcd.nitroless.ui.theme.*
+import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,10 +24,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             var isHomeActive by remember { mutableStateOf(false) }
             var isDrawerActive by remember { mutableStateOf(false) }
-//            var isCommunityReposActive by remember { mutableStateOf(false) }
+            var isCommunityReposActive by remember { mutableStateOf(false) }
             val animateDrawer: Dp by animateDpAsState(
                 if (isDrawerActive) 72.dp else 0.dp
             )
+            val viewModel: RepoViewModel = hiltViewModel()
+
             NitrolessTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -34,6 +39,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Navigation(
+                            viewModel = viewModel,
                             openDrawer = { isDrawerActive = it },
                             animateDrawer = animateDrawer,
                             isDrawerActive = isDrawerActive
@@ -41,7 +47,13 @@ class MainActivity : ComponentActivity() {
                         Drawer(
                             isHomeActive = isHomeActive,
                             isDrawerActive = isDrawerActive,
-                            openDrawer = { isDrawerActive = it }
+                            openDrawer = { isDrawerActive = it },
+                            openCommunityRepos = { isCommunityReposActive = it }
+                        )
+                        CommunityReposUI(
+                            isCommunityReposActive = isCommunityReposActive,
+                            viewModel = viewModel,
+                            openCommunityRepos = { isCommunityReposActive = it }
                         )
                     }
                 }
@@ -51,7 +63,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -62,7 +74,8 @@ fun Navigation(openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive:
                     closeDrawer = { openDrawer(false) },
                     navController = navController,
                     animateDrawer = animateDrawer,
-                    isDrawerActive = isDrawerActive
+                    isDrawerActive = isDrawerActive,
+                    viewModel = viewModel
                 )
             }
         composable("about") {

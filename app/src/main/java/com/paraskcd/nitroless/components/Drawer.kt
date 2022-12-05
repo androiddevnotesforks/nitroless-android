@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.paraskcd.nitroless.ui.theme.*
 
 @Composable
-fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean) -> Unit) {
+fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean) -> Unit, openCommunityRepos: (Boolean) -> Unit) {
     val density = LocalDensity.current
     AnimatedVisibility(
         visible = isDrawerActive,
@@ -94,7 +94,10 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                             .background(Color.Transparent)
                     )
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            openDrawer(false)
+                            openCommunityRepos(true)
+                        },
                         modifier = Modifier
                             .padding(vertical = 10.dp)
                             .clip(CircleShape)
@@ -102,7 +105,7 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                             .size(50.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = com.paraskcd.nitroless.R.drawable.globe),
+                            painter = painterResource(id = com.paraskcd.nitroless.R.drawable.globe2),
                             contentDescription = "",
                             modifier = Modifier.padding(10.dp)
                         )
