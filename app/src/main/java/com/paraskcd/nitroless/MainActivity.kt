@@ -1,6 +1,9 @@
 package com.paraskcd.nitroless
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
@@ -12,10 +15,13 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
+import com.paraskcd.nitroless.components.AddRepoPromptDialog
 import com.paraskcd.nitroless.components.CommunityReposUI
+import com.paraskcd.nitroless.components.DeleteRepoPromptDialog
 import com.paraskcd.nitroless.components.Drawer
 import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
 import com.paraskcd.nitroless.model.Repo
+import com.paraskcd.nitroless.model.RepoTable
 import com.paraskcd.nitroless.screens.Repo
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
@@ -26,6 +32,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            var repoToAdd: String by remember {
+                mutableStateOf("")
+            }
+            var isAddRepoActive: Boolean by remember {
+                mutableStateOf(false)
+            }
+            var isDeleteRepoActive: Boolean by remember {
+                mutableStateOf(false)
+            }
+
             var isHomeActive by remember { mutableStateOf(true) }
             var isDrawerActive by remember { mutableStateOf(false) }
             var isCommunityReposActive by remember { mutableStateOf(false) }
@@ -47,6 +63,22 @@ class MainActivity : ComponentActivity() {
                 viewModel.getReposData()
             }
 
+            val intent: Intent? = getIntent()
+
+            LaunchedEffect(key1 = intent) {
+                if (Intent.ACTION_VIEW == intent?.action) {
+                    val uri: Uri? = intent.data
+                    var url: String? = uri?.getQueryParameter("url")
+                    if (url != null) {
+                        if (url[url.length - 1] != '/') {
+                            url += '/'
+                        }
+                        repoToAdd = url
+                        isAddRepoActive = true
+                    }
+                }
+            }
+
             NitrolessTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -65,7 +97,8 @@ class MainActivity : ComponentActivity() {
                             frequentlyUsedEmotes = frequentlyUsedEmotes,
                             refresh = { refreshCount ++ },
                             selectedRepo = selectedRepo,
-                            repoEmptyFlag = repos != null && repos.isEmpty()
+                            repoEmptyFlag = repos != null && repos.isEmpty(),
+                            showDeleteRepoDialog = { isDeleteRepoActive = it }
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -76,13 +109,43 @@ class MainActivity : ComponentActivity() {
                             makeHomeActive = { isHomeActive = it },
                             refresh = { refreshCount ++ },
                             repos = repos,
-                            loadingRepos = loadingRepos
+                            loadingRepos = loadingRepos,
+                            showAddRepoDialog = { isAddRepoActive = it }
                         )
                         CommunityReposUI(
                             isCommunityReposActive = isCommunityReposActive,
                             viewModel = viewModel,
                             openCommunityRepos = { isCommunityReposActive = it }
                         )
+                        AddRepoPromptDialog(
+                            show = isAddRepoActive,
+                            addRepo = { repoToAdd = it },
+                            repoToAdd = repoToAdd,
+                            addRepoButtonOnClick = {
+                                viewModel.addRepo(RepoTable(repoURL = repoToAdd))
+                                isAddRepoActive = false
+                            },
+                            cancelButtonOnClick = {
+                                repoToAdd = ""
+                                isAddRepoActive = false
+                            }
+                        )
+                        if(selectedRepo != null) {
+                            DeleteRepoPromptDialog(
+                                show = isDeleteRepoActive,
+                                deleteRepoOnClick = {
+                                    isDeleteRepoActive = false
+                                    viewModel.deleteRepo(repo = RepoTable(id = selectedRepo.id!!, repoURL = selectedRepo.url!!))
+                                    refreshCount++
+                                    viewModel.deselectAllRepos()
+                                    isHomeActive = true
+                                },
+                                cancelButtonOnClick = {
+                                    isDeleteRepoActive = false
+                                },
+                                repoName = selectedRepo.name
+                            )
+                        }
                     }
                 }
             }
@@ -91,7 +154,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -116,7 +179,8 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         animateDrawer = animateDrawer,
                         closeRepo = { makeHomeActive(true) },
                         selectedRepo = selectedRepo,
-                        refresh = { refresh() }
+                        refresh = { refresh() },
+                        showDeleteRepoDialog = { showDeleteRepoDialog(true) }
                     )
                 }
             }

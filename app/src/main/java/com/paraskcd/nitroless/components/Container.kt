@@ -67,7 +67,7 @@ fun DarkContainerPill(content: @Composable () -> Unit) {
 @Composable
 fun DarkContainer(content: @Composable () -> Unit) {
     Card(
-        backgroundColor = MaterialTheme.colors.secondary,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp)

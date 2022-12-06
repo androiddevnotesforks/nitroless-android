@@ -38,7 +38,7 @@ import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, refresh: () -> Unit) {
+fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, refresh: () -> Unit, showDeleteRepoDialog: () -> Unit) {
     val clipboardManager = LocalClipboardManager.current
     val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -61,9 +61,7 @@ fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, vie
                 onNavButtonClicked = { openDrawer() },
                 onShareButtonClicked = { context.startActivity(shareIntent) },
                 onRepoDeleteButtonClicked = {
-                    viewModel.deleteRepo(repo = RepoTable(id = selectedRepo.id!!, repoURL = selectedRepo.url!!))
-                    refresh()
-                    closeRepo()
+                    showDeleteRepoDialog()
                 }
             )
             Column(
