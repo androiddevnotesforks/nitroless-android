@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.paraskcd.nitroless.components.CommunityReposUI
 import com.paraskcd.nitroless.components.Drawer
+import com.paraskcd.nitroless.screens.Repo
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,7 +47,8 @@ class MainActivity : ComponentActivity() {
                             viewModel = viewModel,
                             openDrawer = { isDrawerActive = it },
                             animateDrawer = animateDrawer,
-                            isDrawerActive = isDrawerActive
+                            isDrawerActive = isDrawerActive,
+                            isHomeActive = isHomeActive
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -69,20 +71,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean) {
     val navController = rememberNavController()
+
 
     NavHost( navController = navController, startDestination = "home" ) {
         composable("home")
             {
-                Home(
-                    openDrawer = { openDrawer(true) },
-                    closeDrawer = { openDrawer(false) },
-                    navController = navController,
-                    animateDrawer = animateDrawer,
-                    isDrawerActive = isDrawerActive,
-                    viewModel = viewModel
-                )
+                if (isHomeActive) {
+                    Home(
+                        openDrawer = { openDrawer(true) },
+                        closeDrawer = { openDrawer(false) },
+                        navController = navController,
+                        animateDrawer = animateDrawer,
+                        isDrawerActive = isDrawerActive,
+                        viewModel = viewModel
+                    )
+                } else {
+                    Repo(
+                        openDrawer = { openDrawer(true) },
+                        closeDrawer = { openDrawer(false) },
+                        isDrawerActive = isDrawerActive,
+                        viewModel = viewModel,
+                        animateDrawer = animateDrawer
+                    )
+                }
             }
         composable("about") {
             About(

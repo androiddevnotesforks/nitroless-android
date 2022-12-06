@@ -54,6 +54,24 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     private val _favouriteEmotes = MutableStateFlow<List<FavouriteEmotesTable>>(emptyList())
     val favouriteEmotes = _favouriteEmotes.asStateFlow()
 
+    private val _selectedRepo = MutableLiveData<Repo>(
+        Repo(
+            id = null,
+            selected = false,
+            url = null,
+            author = null,
+            description = null,
+            emotes = emptyList(),
+            icon = "",
+            keywords = null,
+            name = "",
+            path = "",
+            favouriteEmotes = null
+        )
+    )
+    val selectedRepo: LiveData<Repo>
+        get() = _selectedRepo
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             getCommunityRepos()
@@ -135,7 +153,11 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         viewModelScope.launch {
             var newRepoList = mutableListOf<Repo>()
             _repos.value?.forEach { rep ->
-                rep.selected = rep == repo
+                rep.selected = false
+                if (rep == repo) {
+                    rep.selected = true
+                    _selectedRepo.value = rep
+                }
                 newRepoList.add(rep)
             }
             _repos.value = emptyList()

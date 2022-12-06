@@ -90,6 +90,7 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                     IconButton(onClick = {
                         makeHomeActive(true)
                         viewModel.deselectAllRepos()
+                        openDrawer(false)
                     }) {
                         AnimatedVisibility(
                             visible = isHomeActive,
@@ -148,6 +149,7 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                     items(repos.value!!) { repo ->
                         DrawerItem(
                             onClick = {
+                                openDrawer(false)
                                 viewModel.deselectAllRepos()
                                 viewModel.selectRepo(repo)
                                 makeHomeActive(false)

@@ -23,7 +23,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @Composable
 fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, animateDrawer: Dp, isDrawerActive: Boolean, viewModel: RepoViewModel ) {
-    Column(modifier = Modifier
+    Column(
+        modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.primary)
     ) {
@@ -40,7 +41,8 @@ fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHos
                 }
             }
         )
-        LazyColumn(modifier = Modifier
+        LazyColumn(
+            modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colors.background)
             .offset(

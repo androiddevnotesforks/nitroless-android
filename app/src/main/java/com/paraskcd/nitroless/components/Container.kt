@@ -46,6 +46,25 @@ fun ContainerPill(content: @Composable () -> Unit) {
 }
 
 @Composable
+fun DarkContainerPill(content: @Composable () -> Unit) {
+    Card(
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp)
+            .padding(bottom = 5.dp)
+            .padding(horizontal = 10.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)
+        ),
+        shape = CircleShape
+    ) {
+        content()
+    }
+}
+
+@Composable
 fun DarkContainer(content: @Composable () -> Unit) {
     Card(
         backgroundColor = MaterialTheme.colors.secondary,

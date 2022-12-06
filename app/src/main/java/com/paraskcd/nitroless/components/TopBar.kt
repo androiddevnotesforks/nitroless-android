@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,54 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
                         onButtonClicked()
                     }) {
                         Icon(Icons.Filled.Info, contentDescription = "")
+                    }
+                }
+            } else {
+                Text(text = titleName)
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = { onNavButtonClicked() } ) {
+                Icon(buttonIcon, contentDescription = "")
+            }
+        },
+        backgroundColor = MaterialTheme.colors.primaryVariant
+    )
+}
+
+@Composable
+fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -> Unit) {
+    TopAppBar(
+        elevation = 12.dp,
+        title = {
+            if(titleName == null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(72.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Image(
+                        painter = painterResource(id = com.paraskcd.nitroless.R.drawable.banner),
+                        contentDescription = "Logo",
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(248.dp),
+                        contentScale = ContentScale.Fit,
+                        alignment = Alignment.Center
+                    )
+                    Row {
+                        IconButton(onClick = {
+
+                        }) {
+                            Icon(Icons.Filled.Share, contentDescription = "")
+                        }
+                        IconButton(onClick = {
+
+                        }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "")
+                        }
                     }
                 }
             } else {
