@@ -23,18 +23,8 @@ import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean) -> Unit, openCommunityRepos: (Boolean) -> Unit, viewModel: RepoViewModel, makeHomeActive: (Boolean) -> Unit) {
+fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean) -> Unit, openCommunityRepos: (Boolean) -> Unit, viewModel: RepoViewModel, makeHomeActive: (Boolean) -> Unit, repos: List<Repo>?, loadingRepos: Boolean?, refresh: () -> Unit) {
     val density = LocalDensity.current
-    val repos = viewModel.repos.observeAsState()
-    val loadingRepos = viewModel.loadingRepos.observeAsState()
-
-    val refreshCount by remember {
-        mutableStateOf(1)
-    }
-
-    LaunchedEffect(key1 = refreshCount) {
-        viewModel.getReposData()
-    }
 
     AnimatedVisibility(
         visible = isDrawerActive,
@@ -121,7 +111,7 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                     }
                 }
             }
-            if (loadingRepos.value == true) {
+            if (loadingRepos == true) {
                 item {
                     Divider(
                         modifier = Modifier
@@ -146,7 +136,7 @@ fun Drawer(isHomeActive: Boolean, isDrawerActive: Boolean, openDrawer: (Boolean)
                                 .offset(x = 2.dp)
                         )
                     }
-                    items(repos.value!!) { repo ->
+                    items(repos!!) { repo ->
                         DrawerItem(
                             onClick = {
                                 openDrawer(false)

@@ -32,13 +32,13 @@ import com.paraskcd.nitroless.components.Container
 import com.paraskcd.nitroless.components.DarkContainerPill
 import com.paraskcd.nitroless.components.TopBarRepo
 import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
+import com.paraskcd.nitroless.model.Repo
 import com.paraskcd.nitroless.model.RepoTable
 import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit) {
-    val selectedRepo = viewModel.selectedRepo.observeAsState().value
+fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, refresh: () -> Unit) {
     val clipboardManager = LocalClipboardManager.current
     val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -48,14 +48,6 @@ fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, vie
     }
     val shareIntent = Intent.createChooser(sendIntent, null)
     val context = LocalContext.current
-
-    var refreshCount by remember {
-        mutableStateOf(1)
-    }
-
-    LaunchedEffect(key1 = refreshCount) {
-        viewModel.getReposData()
-    }
 
     if (selectedRepo != null) {
         Column(
@@ -70,7 +62,7 @@ fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, vie
                 onShareButtonClicked = { context.startActivity(shareIntent) },
                 onRepoDeleteButtonClicked = {
                     viewModel.deleteRepo(repo = RepoTable(id = selectedRepo.id!!, repoURL = selectedRepo.url!!))
-                    refreshCount++
+                    refresh()
                     closeRepo()
                 }
             )
@@ -139,5 +131,4 @@ fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, vie
             }
         }
     }
-
 }

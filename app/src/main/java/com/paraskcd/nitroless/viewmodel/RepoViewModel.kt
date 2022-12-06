@@ -77,7 +77,6 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 listOfRepos ->
                 if (listOfRepos.isEmpty()) {
                     _repoURLS.value = emptyList()
-                    _repos.value = emptyList()
                 } else {
                     Log.d("ListOfRepos: ", listOfRepos.toString())
                     _repoURLS.value = listOfRepos

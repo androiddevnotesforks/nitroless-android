@@ -32,8 +32,7 @@ import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import kotlinx.coroutines.flow.asStateFlow
 
 @Composable
-fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, animateDrawer: Dp, isDrawerActive: Boolean, viewModel: RepoViewModel ) {
-    val frequentlyUsedEmotes = viewModel.frequentlyUsedEmotes.collectAsState().value
+fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, animateDrawer: Dp, isDrawerActive: Boolean, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
@@ -81,33 +80,57 @@ fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHos
                         .fillMaxWidth()
                         .padding(18.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(painter = painterResource(id = R.drawable.history_icon), contentDescription = "")
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Frequently Used Emotes", fontSize = 20.sp, fontWeight = FontWeight(700))
+                    if (repoEmptyFlag) {
+                        Text("Welcome to Nitroless", fontSize = 20.sp, fontWeight = FontWeight(700))
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.history_icon),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                "Frequently Used Emotes",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight(700)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(5.dp))
-                    if (frequentlyUsedEmotes.isNotEmpty()) {
-                        LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 64.dp)) {
-                            items(frequentlyUsedEmotes.reversed()) { emote ->
-                                IconButton(
-                                    onClick = {
-                                        val emoteURL = emote.emoteURL
-                                        viewModel.addFrequentlyUsedEmote(
-                                            emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
+                    if (repoEmptyFlag) {
+                        Text(text = "Start using Nitroless by adding Your Repositories to the app. Tap on the Hamburger menu above to open the Sidebar Drawer and click either on the Globe Button or the Add Button.")
+                    } else {
+                        if (frequentlyUsedEmotes.isNotEmpty()) {
+                            LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 64.dp)) {
+                                items(frequentlyUsedEmotes.reversed()) { emote ->
+                                    IconButton(
+                                        onClick = {
+                                            val emoteURL = emote.emoteURL
+                                            viewModel.addFrequentlyUsedEmote(
+                                                emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
+                                            )
+                                            clipboardManager.setText(AnnotatedString(emoteURL))
+                                            Toast.makeText(
+                                                context,
+                                                "Copied Emote",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    ) {
+                                        NetworkImage(
+                                            imageURL = emote.emoteURL,
+                                            imageDescription = emote.emoteURL,
+                                            size = 48.dp,
+                                            shape = RoundedCornerShape(10.dp)
                                         )
-                                        clipboardManager.setText(AnnotatedString(emoteURL))
-                                        Toast.makeText(context, "Copied Emote", Toast.LENGTH_SHORT).show()
                                     }
-                                ) {
-                                    NetworkImage(imageURL = emote.emoteURL, imageDescription = emote.emoteURL, size = 48.dp, shape = RoundedCornerShape(10.dp))
                                 }
                             }
+                        } else {
+                            Text(text = "Start using Nitroless to show your frequently used emotes here.")
                         }
-                    } else {
-                        Text(text = "Start using Nitroless to show your frequently used emotes here.")
                     }
                 }
             }

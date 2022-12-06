@@ -34,7 +34,7 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
                         contentDescription = "Logo",
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(230.dp),
+                            .width(220.dp),
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     )
@@ -75,7 +75,7 @@ fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: 
                         contentDescription = "Logo",
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(230.dp),
+                            .width(220.dp),
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     )

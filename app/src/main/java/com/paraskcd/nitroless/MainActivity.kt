@@ -7,12 +7,15 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.paraskcd.nitroless.components.CommunityReposUI
 import com.paraskcd.nitroless.components.Drawer
+import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
+import com.paraskcd.nitroless.model.Repo
 import com.paraskcd.nitroless.screens.Repo
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
@@ -30,8 +33,17 @@ class MainActivity : ComponentActivity() {
                 if (isDrawerActive) 72.dp else 0.dp
             )
             val viewModel: RepoViewModel = hiltViewModel()
-            
-            LaunchedEffect(key1 = Unit) {
+
+            val frequentlyUsedEmotes = viewModel.frequentlyUsedEmotes.collectAsState().value
+            val selectedRepo = viewModel.selectedRepo.observeAsState().value
+            val repos = viewModel.repos.observeAsState().value
+            val loadingRepos = viewModel.loadingRepos.observeAsState().value
+
+            var refreshCount by remember {
+                mutableStateOf(1)
+            }
+
+            LaunchedEffect(key1 = refreshCount) {
                 viewModel.getReposData()
             }
 
@@ -49,7 +61,11 @@ class MainActivity : ComponentActivity() {
                             animateDrawer = animateDrawer,
                             isDrawerActive = isDrawerActive,
                             isHomeActive = isHomeActive,
-                            makeHomeActive = { isHomeActive = it }
+                            makeHomeActive = { isHomeActive = it },
+                            frequentlyUsedEmotes = frequentlyUsedEmotes,
+                            refresh = { refreshCount ++ },
+                            selectedRepo = selectedRepo,
+                            repoEmptyFlag = repos != null && repos.isEmpty()
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -57,7 +73,10 @@ class MainActivity : ComponentActivity() {
                             openDrawer = { isDrawerActive = it },
                             openCommunityRepos = { isCommunityReposActive = it },
                             viewModel = viewModel,
-                            makeHomeActive = { isHomeActive = it }
+                            makeHomeActive = { isHomeActive = it },
+                            refresh = { refreshCount ++ },
+                            repos = repos,
+                            loadingRepos = loadingRepos
                         )
                         CommunityReposUI(
                             isCommunityReposActive = isCommunityReposActive,
@@ -72,7 +91,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -85,7 +104,9 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         navController = navController,
                         animateDrawer = animateDrawer,
                         isDrawerActive = isDrawerActive,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        frequentlyUsedEmotes = frequentlyUsedEmotes,
+                        repoEmptyFlag = repoEmptyFlag
                     )
                 } else {
                     Repo(
@@ -93,7 +114,9 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         closeDrawer = { openDrawer(false) },
                         viewModel = viewModel,
                         animateDrawer = animateDrawer,
-                        closeRepo = { makeHomeActive(true) }
+                        closeRepo = { makeHomeActive(true) },
+                        selectedRepo = selectedRepo,
+                        refresh = { refresh() }
                     )
                 }
             }
