@@ -48,7 +48,8 @@ class MainActivity : ComponentActivity() {
                             openDrawer = { isDrawerActive = it },
                             animateDrawer = animateDrawer,
                             isDrawerActive = isDrawerActive,
-                            isHomeActive = isHomeActive
+                            isHomeActive = isHomeActive,
+                            makeHomeActive = { isHomeActive = it }
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -71,9 +72,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit) {
     val navController = rememberNavController()
-
 
     NavHost( navController = navController, startDestination = "home" ) {
         composable("home")
@@ -91,9 +91,9 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                     Repo(
                         openDrawer = { openDrawer(true) },
                         closeDrawer = { openDrawer(false) },
-                        isDrawerActive = isDrawerActive,
                         viewModel = viewModel,
-                        animateDrawer = animateDrawer
+                        animateDrawer = animateDrawer,
+                        closeRepo = { makeHomeActive(true) }
                     )
                 }
             }

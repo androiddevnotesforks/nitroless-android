@@ -34,7 +34,7 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
                         contentDescription = "Logo",
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(248.dp),
+                            .width(230.dp),
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     )
@@ -58,7 +58,7 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
 }
 
 @Composable
-fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -> Unit) {
+fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -> Unit, onShareButtonClicked: () -> Unit, onRepoDeleteButtonClicked: () -> Unit) {
     TopAppBar(
         elevation = 12.dp,
         title = {
@@ -75,18 +75,18 @@ fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: 
                         contentDescription = "Logo",
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(248.dp),
+                            .width(230.dp),
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     )
                     Row {
                         IconButton(onClick = {
-
+                            onShareButtonClicked()
                         }) {
                             Icon(Icons.Filled.Share, contentDescription = "")
                         }
                         IconButton(onClick = {
-
+                            onRepoDeleteButtonClicked()
                         }) {
                             Icon(Icons.Filled.Delete, contentDescription = "")
                         }

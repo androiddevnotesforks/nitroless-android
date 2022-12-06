@@ -12,18 +12,14 @@ import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.network.ReposApi
 import com.paraskcd.nitroless.repository.CommunityReposRepository
 import com.paraskcd.nitroless.repository.RepoRepository
-import com.paraskcd.nitroless.utils.UUIDConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -75,27 +71,34 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             getCommunityRepos()
+        }
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getAllRepos().distinctUntilChanged().collect {
                 listOfRepos ->
                 if (listOfRepos.isEmpty()) {
                     _repoURLS.value = emptyList()
+                    _repos.value = emptyList()
                 } else {
                     Log.d("ListOfRepos: ", listOfRepos.toString())
                     _repoURLS.value = listOfRepos
                 }
             }
+        }
+        viewModelScope.launch (Dispatchers.IO){
             repository.getAllFrequentlyUsedEmotes().distinctUntilChanged().collect {
-                listOfFrequentlyUsedemotes ->
+                    listOfFrequentlyUsedemotes ->
                 if (listOfFrequentlyUsedemotes.isEmpty()) {
-                    _frequentlyUsedEmotes.value = emptyList()
+                    _frequentlyUsedEmotes.value = kotlin.collections.emptyList()
                 } else {
                     _frequentlyUsedEmotes.value = listOfFrequentlyUsedemotes
                 }
             }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getAllFavouriteEmotes().distinctUntilChanged().collect {
-                listOfFavouriteEmotes ->
+                    listOfFavouriteEmotes ->
                 if (listOfFavouriteEmotes.isEmpty()) {
-                    _favouriteEmotes.value = emptyList()
+                    _favouriteEmotes.value = kotlin.collections.emptyList()
                 } else {
                     _favouriteEmotes.value = listOfFavouriteEmotes
                 }
@@ -105,12 +108,12 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
 
     suspend fun getReposData() {
         _loadingRepos.value = true
-        var repoList = mutableListOf<Repo>()
+        val repoList = mutableListOf<Repo>()
         repoURLS.value.forEachIndexed() { index, repo ->
             val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
             val api: ReposApi = retrofit.create(ReposApi::class.java)
             val dataOrException = DataOrException<Repo, Boolean, Exception>()
-            var repoData = repository.getRepoData(dataOrException, api)
+            val repoData = repository.getRepoData(dataOrException, api)
 
             if (repoData.loading == false) {
                 repoData.data?.id = repo.id
@@ -126,7 +129,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         viewModelScope.launch() {
             communityReposData.value.loading = false
             communityReposData.value = communityReposRepository.getCommunityRepos()
-            var commRepos = mutableListOf<Repo>()
+            val commRepos = mutableListOf<Repo>()
 
             if(communityReposData.value.data.toString().isNotEmpty()) {
                 communityReposData.value.loading = false
@@ -136,7 +139,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                     val retrofit: Retrofit = Retrofit.Builder().baseUrl(dataItem).addConverterFactory(GsonConverterFactory.create()).build()
                     val api: ReposApi = retrofit.create(ReposApi::class.java)
                     val dataOrException = DataOrException<Repo, Boolean, Exception>()
-                    var repoData = repository.getRepoData(dataOrException, api)
+                    val repoData = repository.getRepoData(dataOrException, api)
 
                     if (repoData.loading == false) {
                         repoData.data?.url = dataItem
@@ -151,7 +154,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
 
     fun selectRepo(repo: Repo) {
         viewModelScope.launch {
-            var newRepoList = mutableListOf<Repo>()
+            val newRepoList = mutableListOf<Repo>()
             _repos.value?.forEach { rep ->
                 rep.selected = false
                 if (rep == repo) {
@@ -167,7 +170,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
 
     fun deselectAllRepos() {
         viewModelScope.launch {
-            var newRepoList = mutableListOf<Repo>()
+            val newRepoList = mutableListOf<Repo>()
             _repos.value?.forEach { rep ->
                 rep.selected = false
                 newRepoList.add(rep)
@@ -182,8 +185,30 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     fun deleteRepo(repo: RepoTable) = viewModelScope.launch {
         repository.deleteRepo(repo)
     }
-    fun addFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch { repository.addFrequentlyUsedEmote(emote) }
+    fun addFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch {
+        Log.d("Emote -", emote.toString())
+        _frequentlyUsedEmotes.value!!.forEach { frequentlyUsedEmote ->
+            if (frequentlyUsedEmote.emoteURL == emote.emoteURL) {
+                deleteFrequentlyUsedEmote(frequentlyUsedEmote)
+            }
+        }
+
+        if (_frequentlyUsedEmotes.value!!.size == 25) {
+            deleteFrequentlyUsedEmote(_frequentlyUsedEmotes.value!![0])
+        }
+
+        repository.addFrequentlyUsedEmote(emote)
+    }
     fun deleteFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch { repository.deleteFrequentlyUsedEmote(emote) }
-    fun addFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.addFavouriteEmote(emote) }
+
+    fun addFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch {
+        _favouriteEmotes.value.forEach { favouriteEmote ->
+            if (favouriteEmote.emoteURL == emote.emoteURL && favouriteEmote.repoURL == emote.emoteURL) {
+                deleteFavouriteEmote(favouriteEmote)
+            }
+        }
+
+        repository.addFavouriteEmote(emote)
+    }
     fun deleteFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.deleteFavouriteEmote(emote) }
 }
