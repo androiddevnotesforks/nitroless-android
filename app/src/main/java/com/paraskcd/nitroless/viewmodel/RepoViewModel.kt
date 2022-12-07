@@ -3,10 +3,7 @@ package com.paraskcd.nitroless.viewmodel
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.paraskcd.nitroless.data.DataOrException
 import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.network.ReposApi
@@ -71,6 +68,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             getCommunityRepos()
+            getReposData()
         }
         viewModelScope.launch(Dispatchers.IO) {
             repository.getAllRepos().distinctUntilChanged().collect {
@@ -106,22 +104,25 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     }
 
     suspend fun getReposData() {
-        _loadingRepos.value = true
-        val repoList = mutableListOf<Repo>()
-        repoURLS.value.forEachIndexed() { index, repo ->
-            val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
-            val api: ReposApi = retrofit.create(ReposApi::class.java)
-            val dataOrException = DataOrException<Repo, Boolean, Exception>()
-            val repoData = repository.getRepoData(dataOrException, api)
+        viewModelScope.launch {
+            _loadingRepos.value = true
+            val repoList = mutableListOf<Repo>()
+            repoURLS.value.forEachIndexed() { index, repo ->
+                val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
+                val api: ReposApi = retrofit.create(ReposApi::class.java)
+                val dataOrException = DataOrException<Repo, Boolean, Exception>()
+                val repoData = repository.getRepoData(dataOrException, api)
 
-            if (repoData.loading == false) {
-                repoData.data?.id = repo.id
-                repoData.data?.url = repo.repoURL
-                repoList.add(repoData.data!!)
+                if (repoData.loading == false) {
+                    repoData.data?.id = repo.id
+                    repoData.data?.url = repo.repoURL
+                    repoList.add(repoData.data!!)
+                }
             }
+            _loadingRepos.value = false
+            _repos.value = repoList
         }
-        _loadingRepos.value = false
-        _repos.value = repoList
+
     }
 
     fun getCommunityRepos() {
@@ -210,4 +211,18 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         repository.addFavouriteEmote(emote)
     }
     fun deleteFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.deleteFavouriteEmote(emote) }
+}
+
+class RepoViewModelFactory(
+    private val repoRepository: RepoRepository,
+    private val communityReposRepository: CommunityReposRepository
+) :
+    ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(RepoViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return RepoViewModel(repoRepository, communityReposRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }
