@@ -27,14 +27,14 @@ interface RepoDatabaseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun addRepo(repo: RepoTable)
 
-    @Delete
-        suspend fun deleteRepo(repo: RepoTable)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun addFavouriteEmote(favEmote: FavouriteEmotesTable)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun addFrequentlyUsedEmotes(freqUsed: FrequentlyUsedEmotesTable)
+
+    @Delete
+        suspend fun deleteRepo(repo: RepoTable)
 
     @Delete
         suspend fun deleteFavouriteEmote(favEmote: FavouriteEmotesTable)

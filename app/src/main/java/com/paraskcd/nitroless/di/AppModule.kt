@@ -6,7 +6,9 @@ import com.paraskcd.nitroless.data.RepoDatabase
 import com.paraskcd.nitroless.data.RepoDatabaseDao
 import com.paraskcd.nitroless.network.CommunityReposApi
 import com.paraskcd.nitroless.repository.CommunityReposRepository
+import com.paraskcd.nitroless.repository.RepoRepository
 import com.paraskcd.nitroless.utils.Constants
+import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,4 +38,8 @@ object AppModule {
         fun providesCommunityReposApi(): CommunityReposApi {
             return Retrofit.Builder().baseUrl(Constants.BASE_URL_COMMUNITY_REPOS).addConverterFactory(GsonConverterFactory.create()).build().create(CommunityReposApi::class.java)
         }
+
+    @Singleton
+    @Provides
+        fun providesRepoViewModel(repoDatabaseDao: RepoDatabaseDao, communityReposRepository: CommunityReposRepository) = RepoViewModel(repository = RepoRepository(repoDatabaseDao), communityReposRepository = communityReposRepository)
 }

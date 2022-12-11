@@ -122,7 +122,6 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
             _loadingRepos.value = false
             _repos.value = repoList
         }
-
     }
 
     fun getCommunityRepos() {
