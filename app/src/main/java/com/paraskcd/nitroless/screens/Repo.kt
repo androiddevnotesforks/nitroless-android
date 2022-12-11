@@ -2,6 +2,7 @@ package com.paraskcd.nitroless.screens
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -39,6 +40,9 @@ import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
 fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, refresh: () -> Unit, showDeleteRepoDialog: () -> Unit) {
+    BackHandler {
+        openDrawer()
+    }
     val clipboardManager = LocalClipboardManager.current
     val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -68,9 +72,6 @@ fun Repo(animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, vie
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = MaterialTheme.colors.background)
-                    .offset(
-                        x = animateDrawer
-                    )
                     .draggable(
                         orientation = Orientation.Horizontal,
                         state = rememberDraggableState { delta ->

@@ -1,6 +1,8 @@
 package com.paraskcd.nitroless.keyboard
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
 import android.view.KeyEvent
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
@@ -160,19 +163,26 @@ fun RepoView(context: Context, viewModel: RepoViewModel, emotes: List<Emote>, na
 @Composable
 fun BottomBar(context: Context, repos: List<Repo>?) {
     val configuration = LocalConfiguration.current
+    val ctx = LocalContext.current
+
+    val intent = ctx.getPackageManager().getLaunchIntentForPackage("com.paraskcd.nitroless")
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.app_icon),
-            contentDescription = "",
-            modifier = Modifier
-                .padding(10.dp)
-                .size(40.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
+        IconButton(onClick = {
+            ctx.startActivity(intent)
+        }) {
+            Image(
+                painter = painterResource(id = R.drawable.app_icon),
+                contentDescription = "",
+                modifier = Modifier
+                    .padding(10.dp)
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        }
         Row(modifier = Modifier.width(configuration.screenWidthDp.dp - 110.dp)){}
         IconButton(onClick = {
             val con = (context as IMEService)
@@ -194,52 +204,106 @@ fun BottomBar(context: Context, repos: List<Repo>?) {
 @Composable
 fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean) {
     val clipboardManager = LocalClipboardManager.current
-
-    Card(
-        backgroundColor = BGSecondaryDarkColor,
-        contentColor = TextDarkColor,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(250.dp)
-            .padding(top = 10.dp)
-            .padding(bottom = 5.dp)
-            .padding(horizontal = 10.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = BGTertiaryDarkColor.copy(alpha = 0.1F)
-        ),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Column(
+    if (repoEmptyFlag) {
+        Card(
+            backgroundColor = BGSecondaryDarkColor,
+            contentColor = TextDarkColor,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
+                .padding(top = 10.dp)
+                .padding(bottom = 5.dp)
+                .padding(horizontal = 10.dp),
+            border = BorderStroke(
+                width = 1.dp,
+                color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+            ),
+            shape = RoundedCornerShape(20.dp)
         ) {
-            if (repoEmptyFlag) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp)
+            ) {
                 Text("Welcome to Nitroless", fontSize = 18.sp, fontWeight = FontWeight(700))
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(text = "Start using Nitroless by adding Your Repositories to the app. You'll need to go to the Nitroless App, tap on the Hamburger menu above to open the Sidebar Drawer and click either on the Globe Button or the Add Button.")
+            }
+        }
+    } else {
+        if (frequentlyUsedEmotes.isEmpty()) {
+            Card(
+                backgroundColor = BGSecondaryDarkColor,
+                contentColor = TextDarkColor,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+                    .padding(bottom = 5.dp)
+                    .padding(horizontal = 10.dp),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                ),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.history_icon_keyboard),
-                        contentDescription = ""
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        "Frequently Used Emotes",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight(700)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.history_icon_keyboard),
+                            contentDescription = ""
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "Frequently Used Emotes",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight(700)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(text = "Start using Nitroless to show your frequently used emotes here.")
                 }
             }
-            Spacer(modifier = Modifier.height(5.dp))
-            if (repoEmptyFlag) {
-                Text(text = "Start using Nitroless by adding Your Repositories to the app. You'll need to go to the Nitroless App, tap on the Hamburger menu above to open the Sidebar Drawer and click either on the Globe Button or the Add Button.")
-            } else {
-                if (frequentlyUsedEmotes.isEmpty()) {
-                    Text(text = "Start using Nitroless to show your frequently used emotes here.")
-                } else {
+        } else {
+            Card(
+                backgroundColor = BGSecondaryDarkColor,
+                contentColor = TextDarkColor,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .padding(top = 10.dp)
+                    .padding(bottom = 5.dp)
+                    .padding(horizontal = 10.dp),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                ),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.history_icon_keyboard),
+                            contentDescription = ""
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            "Frequently Used Emotes",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight(700)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
                     LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 56.dp), userScrollEnabled = true) {
                         items(frequentlyUsedEmotes.reversed()) { emote ->
                             IconButton(

@@ -58,9 +58,6 @@ fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHos
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colors.background)
-                .offset(
-                    x = animateDrawer
-                )
                 .draggable(
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->

@@ -1,5 +1,6 @@
 package com.paraskcd.nitroless.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,6 +45,10 @@ fun CommunityReposUI(isCommunityReposActive: Boolean, viewModel: RepoViewModel, 
     val loadingRepos = viewModel.loadingRepos.observeAsState()
 
     var refreshCount by remember { mutableStateOf(1) }
+
+    BackHandler(enabled = isCommunityReposActive) {
+        openCommunityRepos(false)
+    }
 
     LaunchedEffect(key1 = refreshCount) {
         viewModel.getReposData()

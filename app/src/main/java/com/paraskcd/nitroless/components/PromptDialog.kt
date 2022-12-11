@@ -1,5 +1,6 @@
 package com.paraskcd.nitroless.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,9 @@ fun DeleteRepoPromptDialog(
     cancelButtonOnClick: () -> Unit,
     repoName: String
 ) {
+    BackHandler(enabled = show) {
+        cancelButtonOnClick()
+    }
     AnimatedVisibility(
         visible = show,
         enter =  expandVertically() + fadeIn(),
@@ -95,6 +99,9 @@ fun AddRepoPromptDialog(
     addRepoButtonOnClick: () -> Unit,
     cancelButtonOnClick: () -> Unit
 ) {
+    BackHandler(enabled = show) {
+        cancelButtonOnClick()
+    }
     AnimatedVisibility(
         visible = show,
         enter = expandVertically() + fadeIn(),
