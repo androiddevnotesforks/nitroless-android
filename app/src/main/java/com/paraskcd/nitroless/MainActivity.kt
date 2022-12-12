@@ -14,14 +14,13 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
-import com.paraskcd.nitroless.components.AddRepoPromptDialog
-import com.paraskcd.nitroless.components.CommunityReposUI
-import com.paraskcd.nitroless.components.DeleteRepoPromptDialog
-import com.paraskcd.nitroless.components.Drawer
+import com.paraskcd.nitroless.components.*
+import com.paraskcd.nitroless.model.FavouriteEmotesTable
 import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
 import com.paraskcd.nitroless.model.Repo
 import com.paraskcd.nitroless.model.RepoTable
 import com.paraskcd.nitroless.screens.Repo
+import com.paraskcd.nitroless.screens.Settings
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,32 +30,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var repoToAdd: String by remember {
-                mutableStateOf("")
-            }
-            var isAddRepoActive: Boolean by remember {
-                mutableStateOf(false)
-            }
-            var isDeleteRepoActive: Boolean by remember {
-                mutableStateOf(false)
-            }
-
+            var repoToAdd: String by remember { mutableStateOf("") }
+            var isAddRepoActive: Boolean by remember { mutableStateOf(false) }
+            var isDeleteRepoActive: Boolean by remember { mutableStateOf(false) }
             var isHomeActive by remember { mutableStateOf(true) }
             var isDrawerActive by remember { mutableStateOf(false) }
             var isCommunityReposActive by remember { mutableStateOf(false) }
-            val animateDrawer: Dp by animateDpAsState(
-                if (isDrawerActive) 72.dp else 0.dp
-            )
+            var isContextMenuPromptActive by remember { mutableStateOf(false) }
+
+            val animateDrawer: Dp by animateDpAsState( if (isDrawerActive) 72.dp else 0.dp )
+
             val viewModel: RepoViewModel = hiltViewModel()
 
             val frequentlyUsedEmotes = viewModel.frequentlyUsedEmotes.collectAsState().value
+            val favouriteEmotes = viewModel.favouriteEmotes.collectAsState().value
             val selectedRepo = viewModel.selectedRepo.observeAsState().value
             val repos = viewModel.repos.observeAsState().value
             val loadingRepos = viewModel.loadingRepos.observeAsState().value
+            val selectedEmote = viewModel.selectedEmote.observeAsState().value
 
-            var refreshCount by remember {
-                mutableStateOf(1)
-            }
+            var refreshCount by remember { mutableStateOf(1) }
 
             LaunchedEffect(key1 = refreshCount) {
                 viewModel.getReposData()
@@ -97,7 +90,9 @@ class MainActivity : ComponentActivity() {
                             refresh = { refreshCount ++ },
                             selectedRepo = selectedRepo,
                             repoEmptyFlag = repos != null && repos.isEmpty(),
-                            showDeleteRepoDialog = { isDeleteRepoActive = it }
+                            showDeleteRepoDialog = { isDeleteRepoActive = it },
+                            showContextMenuPromptDialog = { isContextMenuPromptActive = it },
+                            favouriteEmotes = favouriteEmotes
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -145,6 +140,17 @@ class MainActivity : ComponentActivity() {
                                 repoName = selectedRepo.name
                             )
                         }
+                        if (selectedEmote != null) {
+                            ContextMenuPrompt(
+                                show = isContextMenuPromptActive,
+                                cancelButtonOnClick = {
+                                    isContextMenuPromptActive = false
+                                },
+                                selectedEmote = selectedEmote,
+                                viewModel = viewModel,
+                                refresh = { refreshCount++ }
+                            )
+                        }
                     }
                 }
             }
@@ -153,7 +159,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit, showContextMenuPromptDialog: (Boolean) -> Unit, favouriteEmotes: List<FavouriteEmotesTable>) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -168,7 +174,8 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         isDrawerActive = isDrawerActive,
                         viewModel = viewModel,
                         frequentlyUsedEmotes = frequentlyUsedEmotes,
-                        repoEmptyFlag = repoEmptyFlag
+                        repoEmptyFlag = repoEmptyFlag,
+                        favouriteEmotes = favouriteEmotes
                     )
                 } else {
                     Repo(
@@ -179,12 +186,18 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         closeRepo = { makeHomeActive(true) },
                         selectedRepo = selectedRepo,
                         refresh = { refresh() },
-                        showDeleteRepoDialog = { showDeleteRepoDialog(true) }
+                        showDeleteRepoDialog = { showDeleteRepoDialog(true) },
+                        showContextMenuPromptDialog = { showContextMenuPromptDialog(true) }
                     )
                 }
             }
         composable("about") {
             About(
+                navController = navController
+            )
+        }
+        composable("settings") {
+            Settings(
                 navController = navController
             )
         }

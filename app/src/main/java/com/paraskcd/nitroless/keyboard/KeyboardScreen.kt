@@ -17,8 +17,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
@@ -33,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
@@ -40,36 +44,31 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.paraskcd.nitroless.R
 import com.paraskcd.nitroless.model.Emote
+import com.paraskcd.nitroless.model.FavouriteEmotesTable
 import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
 import com.paraskcd.nitroless.model.Repo
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, selectedRepo: Repo, viewModel: RepoViewModel) {
+fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>,  viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>) {
+    val configuration = LocalConfiguration.current
+
     Column(
         modifier = Modifier
             .background(BGPrimaryDarkColor)
             .fillMaxWidth()
-            .height(360.dp),
+            .height(400.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         if (repos != null) {
-            LazyColumn(
-                modifier = Modifier.height(300.dp)
-            ) {
-                item {
-                    Home(context = context, viewModel = viewModel, frequentlyUsedEmotes = frequentlyUsedEmotes, repoEmptyFlag = repos.isEmpty())
+            Column(modifier = Modifier.height(330.dp)) {
+                if (favouriteEmotes.isNotEmpty()) {
+                    FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = favouriteEmotes)
                 }
-                if (repos.isNotEmpty()) {
-                    items(repos) {
-                            repo ->
-                        RepoView(context = context, viewModel = viewModel, emotes = repo.emotes, name = repo.name, path = repo.path, url = repo.url!!, icon = repo.icon)
-                    }
-                }
+                Home(context = context, viewModel = viewModel, frequentlyUsedEmotes = frequentlyUsedEmotes, repoEmptyFlag = repos.isEmpty(), favouriteEmotesFlag = favouriteEmotes.isEmpty())
             }
-            
-            BottomBar(context = context, repos = repos)
+            BottomBar(context = context, repos = repos, viewModel = viewModel)
         } else {
             Card(
                 backgroundColor = BGSecondaryDarkColor,
@@ -100,15 +99,13 @@ fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: L
 }
 
 @Composable
-fun RepoView(context: Context, viewModel: RepoViewModel, emotes: List<Emote>, name: String, path: String, url: String, icon: String) {
+fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>) {
     val clipboardManager = LocalClipboardManager.current
-
     Card(
         backgroundColor = BGSecondaryDarkColor,
         contentColor = TextDarkColor,
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp)
             .padding(top = 10.dp)
             .padding(bottom = 5.dp)
             .padding(horizontal = 10.dp),
@@ -126,18 +123,18 @@ fun RepoView(context: Context, viewModel: RepoViewModel, emotes: List<Emote>, na
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                NetworkKeyboardImage(imageURL = url + icon, imageDescription = "", size = 35.dp, shape = RoundedCornerShape(8.dp))
+                Icon(Icons.Filled.Star, "")
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    name,
+                    "Favourite Emotes",
                     fontSize = 18.sp,
                     fontWeight = FontWeight(700)
                 )
             }
             Spacer(modifier = Modifier.height(5.dp))
-            LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 56.dp), userScrollEnabled = true) {
-                items(emotes) { emote ->
-                    val emoteURL = url + path + "/" + emote.name + "." + emote.type
+            LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 48.dp), userScrollEnabled = true) {
+                items(favouriteEmotes) { emote ->
+                    val emoteURL = emote.emoteURL
                     IconButton(
                         onClick = {
                             viewModel.addFrequentlyUsedEmote(
@@ -145,12 +142,13 @@ fun RepoView(context: Context, viewModel: RepoViewModel, emotes: List<Emote>, na
                             )
                             clipboardManager.setText(AnnotatedString(emoteURL))
                             (context as IMEService).currentInputConnection.commitText(emoteURL, emoteURL.length)
+                            context.setInputView(ComposeKeyboardView(context))
                         }
                     ) {
                         NetworkKeyboardImage(
                             imageURL = emoteURL,
                             imageDescription = emoteURL,
-                            size = 40.dp,
+                            size = 32.dp,
                             shape = RoundedCornerShape(10.dp)
                         )
                     }
@@ -161,18 +159,16 @@ fun RepoView(context: Context, viewModel: RepoViewModel, emotes: List<Emote>, na
 }
 
 @Composable
-fun BottomBar(context: Context, repos: List<Repo>?) {
+fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel) {
     val configuration = LocalConfiguration.current
-    val ctx = LocalContext.current
-
-    val intent = ctx.getPackageManager().getLaunchIntentForPackage("com.paraskcd.nitroless")
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(onClick = {
-            ctx.startActivity(intent)
+            viewModel.deselectAllRepos()
+            (context as IMEService).setInputView(ComposeKeyboardView(context))
         }) {
             Image(
                 painter = painterResource(id = R.drawable.app_icon),
@@ -183,7 +179,24 @@ fun BottomBar(context: Context, repos: List<Repo>?) {
                     .clip(RoundedCornerShape(8.dp))
             )
         }
-        Row(modifier = Modifier.width(configuration.screenWidthDp.dp - 110.dp)){}
+        LazyRow(modifier = Modifier.width(configuration.screenWidthDp.dp - 110.dp)){
+            if (repos != null) {
+                items(repos) {repo ->
+                    val repoIcon = repo.url + repo.icon
+                    IconButton(onClick = {
+                        viewModel.selectRepo(repo)
+                        (context as IMEService).setInputView(ComposeKeyboardRepoView(context))
+                    }) {
+                        NetworkKeyboardImage(
+                            imageURL = repoIcon,
+                            imageDescription = "",
+                            size = 40.dp,
+                            shape = CircleShape
+                        )
+                    }
+                }
+            }
+        }
         IconButton(onClick = {
             val con = (context as IMEService)
             con.currentInputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
@@ -202,8 +215,9 @@ fun BottomBar(context: Context, repos: List<Repo>?) {
 }
 
 @Composable
-fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean) {
+fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean, favouriteEmotesFlag: Boolean) {
     val clipboardManager = LocalClipboardManager.current
+
     if (repoEmptyFlag) {
         Card(
             backgroundColor = BGSecondaryDarkColor,
@@ -274,7 +288,6 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                 contentColor = TextDarkColor,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
                     .padding(top = 10.dp)
                     .padding(bottom = 5.dp)
                     .padding(horizontal = 10.dp),
@@ -304,7 +317,7 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                         )
                     }
                     Spacer(modifier = Modifier.height(5.dp))
-                    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 56.dp), userScrollEnabled = true) {
+                    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 48.dp), userScrollEnabled = true) {
                         items(frequentlyUsedEmotes.reversed()) { emote ->
                             IconButton(
                                 onClick = {
@@ -314,12 +327,13 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                                     )
                                     clipboardManager.setText(AnnotatedString(emoteURL))
                                     (context as IMEService).currentInputConnection.commitText(emoteURL, emoteURL.length)
+                                    context.setInputView(ComposeKeyboardView(context))
                                 }
                             ) {
                                 NetworkKeyboardImage(
                                     imageURL = emote.emoteURL,
                                     imageDescription = emote.emoteURL,
-                                    size = 40.dp,
+                                    size = 32.dp,
                                     shape = RoundedCornerShape(10.dp)
                                 )
                             }
@@ -351,6 +365,31 @@ fun NetworkKeyboardImage(imageURL: String, imageDescription: String, size: Dp, s
         contentDescription = imageDescription,
         modifier = Modifier
             .padding(10.dp)
+            .clip(shape)
+            .size(size)
+            .background(BGSecondaryDarkColor)
+    )
+}
+
+@Composable
+fun NetworkKeyboardImageWOPadding(imageURL: String, imageDescription: String, size: Dp, shape: Shape) {
+    val context = LocalContext.current
+
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(context = context).data(imageURL).build(),
+        imageLoader = ImageLoader.Builder(context = context).components {
+            if (Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }.build()
+    )
+
+    Image(
+        painter = painter,
+        contentDescription = imageDescription,
+        modifier = Modifier
             .clip(shape)
             .size(size)
             .background(BGSecondaryDarkColor)

@@ -12,9 +12,4 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 @HiltAndroidApp
-class Nitroless: Application() {
-    val database by lazy { Room.databaseBuilder(this, RepoDatabase::class.java, "repo_db").fallbackToDestructiveMigration().build() }
-    val repository by lazy { RepoRepository(database.repoDao()) }
-    val communityReposApi by lazy { Retrofit.Builder().baseUrl(Constants.BASE_URL_COMMUNITY_REPOS).addConverterFactory(GsonConverterFactory.create()).build().create(CommunityReposApi::class.java) }
-    val communityReposRepository by lazy { CommunityReposRepository(communityReposApi) }
-}
+class Nitroless: Application() {}

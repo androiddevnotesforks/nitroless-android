@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -47,21 +48,11 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     private val _favouriteEmotes = MutableStateFlow<List<FavouriteEmotesTable>>(emptyList())
     val favouriteEmotes = _favouriteEmotes.asStateFlow()
 
-    private val _selectedRepo = MutableLiveData<Repo>(
-        Repo(
-            id = null,
-            selected = false,
-            url = null,
-            author = null,
-            description = null,
-            emotes = emptyList(),
-            icon = "",
-            keywords = null,
-            name = "",
-            path = "",
-            favouriteEmotes = null
-        )
-    )
+    private val _selectedEmote = MutableLiveData<FavouriteEmotesTable>()
+    val selectedEmote: LiveData<FavouriteEmotesTable>
+        get() = _selectedEmote
+
+    private val _selectedRepo = MutableLiveData<Repo>()
     val selectedRepo: LiveData<Repo>
         get() = _selectedRepo
 
@@ -108,15 +99,30 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
             _loadingRepos.value = true
             val repoList = mutableListOf<Repo>()
             repoURLS.value.forEachIndexed() { index, repo ->
+                val favEmotes = mutableListOf<FavouriteEmotesTable>()
+
                 val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
                 val api: ReposApi = retrofit.create(ReposApi::class.java)
                 val dataOrException = DataOrException<Repo, Boolean, Exception>()
                 val repoData = repository.getRepoData(dataOrException, api)
+                favouriteEmotes.value.forEach {
+                    if (it.repoURL == repo.repoURL) {
+                        favEmotes.add(it)
+                    }
+                }
 
                 if (repoData.loading == false) {
                     repoData.data?.id = repo.id
                     repoData.data?.url = repo.repoURL
+                    repoData.data?.favouriteEmotes = favEmotes
                     repoList.add(repoData.data!!)
+                }
+
+                if (selectedRepo.value != null) {
+                    if (selectedRepo.value!!.selected && selectedRepo.value!!.url == repo.repoURL) {
+                        repoData.data?.selected = true
+                        _selectedRepo.value = repoData.data
+                    }
                 }
             }
             _loadingRepos.value = false
@@ -151,6 +157,16 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         }
     }
 
+    fun selectEmote(emote: FavouriteEmotesTable) {
+        var selectedEmote: FavouriteEmotesTable = emote
+        this.favouriteEmotes.value.forEach { favouriteEmote ->
+            if (emote.repoURL == favouriteEmote.repoURL && emote.emoteURL == favouriteEmote.emoteURL) {
+                selectedEmote = favouriteEmote
+            }
+        }
+        _selectedEmote.value = selectedEmote
+    }
+
     fun selectRepo(repo: Repo) {
         viewModelScope.launch {
             val newRepoList = mutableListOf<Repo>()
@@ -175,6 +191,9 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 newRepoList.add(rep)
             }
             _repos.value = newRepoList
+            if (_selectedRepo.value != null) {
+                _selectedRepo.value!!.selected = false
+            }
         }
     }
 
@@ -210,18 +229,4 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         repository.addFavouriteEmote(emote)
     }
     fun deleteFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.deleteFavouriteEmote(emote) }
-}
-
-class RepoViewModelFactory(
-    private val repoRepository: RepoRepository,
-    private val communityReposRepository: CommunityReposRepository
-) :
-    ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(RepoViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return RepoViewModel(repoRepository, communityReposRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
 }

@@ -39,7 +39,9 @@ fun About(navController: NavHostController) {
             onNavButtonClicked = {
                 navController.popBackStack()
             },
-            onButtonClicked = {})
+            onInfoButtonClicked = {},
+            onSettingsButtonClicked = {}
+        )
         LazyColumn(modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colors.background)

@@ -25,23 +25,13 @@ class ComposeKeyboardView(context: Context): AbstractComposeView(context) {
     override fun Content() {
         val repos = this.viewModel.repos.observeAsState().value
         val frequentlyUsedEmotes = this.viewModel.frequentlyUsedEmotes.collectAsState().value
+        val favouriteEmotes = this.viewModel.favouriteEmotes.collectAsState().value
+        val selectedRepo = this.viewModel.selectedRepo.observeAsState().value
 
-        val selectedRepo: Repo by remember {
-            mutableStateOf(Repo(
-                id = null,
-                selected = false,
-                url = null,
-                author = null,
-                description = null,
-                emotes = emptyList(),
-                icon = "",
-                keywords = null,
-                name = "",
-                path = "",
-                favouriteEmotes = null
-            ))
+        if (selectedRepo != null && selectedRepo.selected) {
+            (context as IMEService).setInputView(ComposeKeyboardRepoView(context))
         }
 
-        KeyboardScreen(context, repos, frequentlyUsedEmotes, selectedRepo, this.viewModel)
+        KeyboardScreen(context, repos, frequentlyUsedEmotes, this.viewModel, favouriteEmotes)
     }
 }
