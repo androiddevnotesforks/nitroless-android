@@ -58,11 +58,11 @@ fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: L
         modifier = Modifier
             .background(BGPrimaryDarkColor)
             .fillMaxWidth()
-            .height(400.dp),
+            .height(420.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         if (repos != null) {
-            Column(modifier = Modifier.height(330.dp)) {
+            Column(modifier = Modifier.height(360.dp)) {
                 if (favouriteEmotes.isNotEmpty()) {
                     FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = favouriteEmotes)
                 }
@@ -106,6 +106,7 @@ fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes:
         contentColor = TextDarkColor,
         modifier = Modifier
             .fillMaxWidth()
+            .height(180.dp)
             .padding(top = 10.dp)
             .padding(bottom = 5.dp)
             .padding(horizontal = 10.dp),

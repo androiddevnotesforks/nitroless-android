@@ -37,11 +37,11 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
         modifier = Modifier
             .background(BGPrimaryDarkColor)
             .fillMaxWidth()
-            .height(400.dp),
+            .height(420.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         if (repos != null && selectedRepo != null) {
-            Column(modifier = Modifier.height(330.dp)) {
+            Column(modifier = Modifier.height(360.dp)) {
                 if (selectedRepo.favouriteEmotes != null && selectedRepo.favouriteEmotes!!.isNotEmpty()) {
                     FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = selectedRepo.favouriteEmotes!!)
                 }
