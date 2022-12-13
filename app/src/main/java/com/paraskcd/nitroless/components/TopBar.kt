@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -> Unit, onInfoButtonClicked: () -> Unit, onSettingsButtonClicked: () -> Unit) {
     TopAppBar(
-        elevation = 12.dp,
+        elevation = 10.dp,
         title = {
             if(titleName == null) {
                 Row(
@@ -66,7 +66,7 @@ fun TopBar(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -
 @Composable
 fun TopBarRepo(titleName: String?, buttonIcon: ImageVector, onNavButtonClicked: () -> Unit, onShareButtonClicked: () -> Unit, onRepoDeleteButtonClicked: () -> Unit) {
     TopAppBar(
-        elevation = 12.dp,
+        elevation = 10.dp,
         title = {
             if(titleName == null) {
                 Row(

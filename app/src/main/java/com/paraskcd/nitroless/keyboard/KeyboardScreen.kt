@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -51,12 +52,10 @@ import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>,  viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>) {
-    val configuration = LocalConfiguration.current
-
+fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, history_icon: Int, backspace_icon: Int) {
     Column(
         modifier = Modifier
-            .background(BGPrimaryDarkColor)
+            .background(bgPrimaryColor)
             .fillMaxWidth()
             .height(420.dp),
         verticalArrangement = Arrangement.SpaceBetween
@@ -64,15 +63,43 @@ fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: L
         if (repos != null) {
             Column(modifier = Modifier.height(360.dp)) {
                 if (favouriteEmotes.isNotEmpty()) {
-                    FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = favouriteEmotes)
+                    FavouriteEmotes(
+                        context = context,
+                        viewModel = viewModel,
+                        favouriteEmotes = favouriteEmotes,
+                        textColor = textColor,
+                        bgPrimaryColor = bgPrimaryColor,
+                        bgSecondaryColor = bgSecondaryColor,
+                        bgTertiaryColor = bgTertiaryColor
+                    )
                 }
-                Home(context = context, viewModel = viewModel, frequentlyUsedEmotes = frequentlyUsedEmotes, repoEmptyFlag = repos.isEmpty(), favouriteEmotesFlag = favouriteEmotes.isEmpty())
+                Home(
+                    context = context,
+                    viewModel = viewModel,
+                    frequentlyUsedEmotes = frequentlyUsedEmotes,
+                    repoEmptyFlag = repos.isEmpty(),
+                    favouriteEmotesFlag = favouriteEmotes.isEmpty(),
+                    textColor = textColor,
+                    bgPrimaryColor = bgPrimaryColor,
+                    bgSecondaryColor = bgSecondaryColor,
+                    bgTertiaryColor = bgTertiaryColor,
+                    history_icon = history_icon
+                )
             }
-            BottomBar(context = context, repos = repos, viewModel = viewModel)
+            BottomBar(
+                context = context,
+                repos = repos,
+                viewModel = viewModel,
+                textColor = textColor,
+                bgPrimaryColor = bgPrimaryColor,
+                bgSecondaryColor = bgSecondaryColor,
+                bgTertiaryColor = bgTertiaryColor,
+                backspace_icon = backspace_icon
+            )
         } else {
             Card(
-                backgroundColor = BGSecondaryDarkColor,
-                contentColor = TextDarkColor,
+                backgroundColor = bgSecondaryColor,
+                contentColor = textColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -80,9 +107,10 @@ fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: L
                     .padding(horizontal = 10.dp),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                    color = bgTertiaryColor.copy(alpha = 0.1F)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp),
+                elevation = 10.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -99,11 +127,11 @@ fun KeyboardScreen(context: Context, repos: List<Repo>?, frequentlyUsedEmotes: L
 }
 
 @Composable
-fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>) {
+fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes: List<FavouriteEmotesTable>, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color) {
     val clipboardManager = LocalClipboardManager.current
     Card(
-        backgroundColor = BGSecondaryDarkColor,
-        contentColor = TextDarkColor,
+        backgroundColor = bgSecondaryColor,
+        contentColor = textColor,
         modifier = Modifier
             .fillMaxWidth()
             .height(180.dp)
@@ -112,9 +140,10 @@ fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes:
             .padding(horizontal = 10.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+            color = bgTertiaryColor.copy(alpha = 0.1F)
         ),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = 10.dp
     ) {
         Column(
             modifier = Modifier
@@ -150,7 +179,8 @@ fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes:
                             imageURL = emoteURL,
                             imageDescription = emoteURL,
                             size = 32.dp,
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            bgSecondaryColor = bgSecondaryColor
                         )
                     }
                 }
@@ -160,7 +190,7 @@ fun FavouriteEmotes(context: Context, viewModel: RepoViewModel, favouriteEmotes:
 }
 
 @Composable
-fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel) {
+fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int) {
     val configuration = LocalConfiguration.current
 
     Row(
@@ -192,7 +222,8 @@ fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel) {
                             imageURL = repoIcon,
                             imageDescription = "",
                             size = 40.dp,
-                            shape = CircleShape
+                            shape = CircleShape,
+                            bgSecondaryColor = bgSecondaryColor
                         )
                     }
                 }
@@ -204,7 +235,7 @@ fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel) {
             con.currentInputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
         }) {
             Image(
-                painter = painterResource(id = R.drawable.backspace),
+                painter = painterResource(id = backspace_icon),
                 contentDescription = "",
                 modifier = Modifier
                     .padding(10.dp)
@@ -216,13 +247,13 @@ fun BottomBar(context: Context, repos: List<Repo>?, viewModel: RepoViewModel) {
 }
 
 @Composable
-fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean, favouriteEmotesFlag: Boolean) {
+fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean, favouriteEmotesFlag: Boolean, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, history_icon: Int) {
     val clipboardManager = LocalClipboardManager.current
 
     if (repoEmptyFlag) {
         Card(
-            backgroundColor = BGSecondaryDarkColor,
-            contentColor = TextDarkColor,
+            backgroundColor = bgSecondaryColor,
+            contentColor = textColor,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 10.dp)
@@ -230,9 +261,10 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                 .padding(horizontal = 10.dp),
             border = BorderStroke(
                 width = 1.dp,
-                color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                color = bgTertiaryColor.copy(alpha = 0.1F)
             ),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(20.dp),
+            elevation = 10.dp
         ) {
             Column(
                 modifier = Modifier
@@ -247,8 +279,8 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
     } else {
         if (frequentlyUsedEmotes.isEmpty()) {
             Card(
-                backgroundColor = BGSecondaryDarkColor,
-                contentColor = TextDarkColor,
+                backgroundColor = bgSecondaryColor,
+                contentColor = textColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -256,9 +288,10 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                     .padding(horizontal = 10.dp),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                    color = bgTertiaryColor.copy(alpha = 0.1F)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp),
+                elevation = 10.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -269,7 +302,7 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.history_icon_keyboard),
+                            painter = painterResource(id = history_icon),
                             contentDescription = ""
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -285,8 +318,8 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
             }
         } else {
             Card(
-                backgroundColor = BGSecondaryDarkColor,
-                contentColor = TextDarkColor,
+                backgroundColor = bgSecondaryColor,
+                contentColor = textColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -294,9 +327,10 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                     .padding(horizontal = 10.dp),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                    color = bgTertiaryColor.copy(alpha = 0.1F)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp),
+                elevation = 10.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -307,7 +341,7 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.history_icon_keyboard),
+                            painter = painterResource(id = history_icon),
                             contentDescription = ""
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -335,7 +369,8 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
                                     imageURL = emote.emoteURL,
                                     imageDescription = emote.emoteURL,
                                     size = 32.dp,
-                                    shape = RoundedCornerShape(10.dp)
+                                    shape = RoundedCornerShape(10.dp),
+                                    bgSecondaryColor = bgSecondaryColor
                                 )
                             }
                         }
@@ -347,7 +382,7 @@ fun Home(context: Context, viewModel: RepoViewModel, frequentlyUsedEmotes: List<
 }
 
 @Composable
-fun NetworkKeyboardImage(imageURL: String, imageDescription: String, size: Dp, shape: Shape) {
+fun NetworkKeyboardImage(imageURL: String, imageDescription: String, size: Dp, shape: Shape, bgSecondaryColor: Color) {
     val context = LocalContext.current
 
     val painter = rememberAsyncImagePainter(
@@ -368,12 +403,12 @@ fun NetworkKeyboardImage(imageURL: String, imageDescription: String, size: Dp, s
             .padding(10.dp)
             .clip(shape)
             .size(size)
-            .background(BGSecondaryDarkColor)
+            .background(bgSecondaryColor)
     )
 }
 
 @Composable
-fun NetworkKeyboardImageWOPadding(imageURL: String, imageDescription: String, size: Dp, shape: Shape) {
+fun NetworkKeyboardImageWOPadding(imageURL: String, imageDescription: String, size: Dp, shape: Shape, bgSecondaryColor: Color) {
     val context = LocalContext.current
 
     val painter = rememberAsyncImagePainter(
@@ -393,6 +428,6 @@ fun NetworkKeyboardImageWOPadding(imageURL: String, imageDescription: String, si
         modifier = Modifier
             .clip(shape)
             .size(size)
-            .background(BGSecondaryDarkColor)
+            .background(bgSecondaryColor)
     )
 }

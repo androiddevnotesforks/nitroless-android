@@ -1,5 +1,6 @@
 package com.paraskcd.nitroless.screens
 
+import android.app.Application
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
@@ -10,7 +11,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,6 +25,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.paraskcd.nitroless.Nitroless
 import com.paraskcd.nitroless.components.Container
 import com.paraskcd.nitroless.components.TopBar
 import com.paraskcd.nitroless.ui.theme.AccentColor
@@ -30,6 +34,22 @@ import splitties.systemservices.inputMethodManager
 @Composable
 fun Settings(navController: NavHostController) {
     val context = LocalContext.current
+    val app = context.applicationContext as Nitroless
+    val hideFavouriteEmotes = remember {
+        mutableStateOf(app.preferences?.getBoolean("hide-favourite-emotes-keyboard", false))
+    }
+    val hideFrequentlyUsedEmotes = remember {
+        mutableStateOf(app.preferences?.getBoolean("hide-frequently-used-emotes-keyboard", false))
+    }
+    val hideRepositories = remember {
+        mutableStateOf(app.preferences?.getBoolean("hide-repositories-keyboard", false))
+    }
+    val systemDarkMode = remember {
+        mutableStateOf(app.preferences?.getBoolean("system-dark-keyboard", false))
+    }
+    val darkMode = remember {
+        mutableStateOf(app.preferences?.getBoolean("dark-keyboard", true))
+    }
     val (text, setValue) = remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
@@ -54,38 +74,254 @@ fun Settings(navController: NavHostController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        Button(
-                            onClick = {
-                                context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
-                            },
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = AccentColor,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier
-                                .width(300.dp)
-                                .padding(horizontal = 10.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Enable Nitroless Keyboard")
+                            Icon(Icons.Filled.Settings, contentDescription = "")
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Hide", fontSize = 20.sp, fontWeight = FontWeight(700))
                         }
-                        Button(
-                            onClick = {
-                                inputMethodManager.showInputMethodPicker()
-                            },
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = AccentColor,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier
-                                .width(300.dp)
-                                .padding(horizontal = 10.dp)
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Text(text = "Select Nitroless Keyboard")
+                            val hideFavourites = remember { mutableStateOf(hideFavouriteEmotes.value!!) }
+                            val hideFrequentlyUsed = remember { mutableStateOf(hideFrequentlyUsedEmotes.value!!) }
+                            val hideRepos = remember { mutableStateOf(hideRepositories.value!!) }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Hide Favourite Emotes")
+                                Switch(
+                                    checked = hideFavourites.value,
+                                    onCheckedChange = {
+                                        hideFavourites.value = it
+                                        app.preferences?.edit()?.putBoolean("hide-favourite-emotes-keyboard", it)?.apply()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = AccentColor,
+                                        checkedTrackColor = AccentColor,
+                                        checkedTrackAlpha = 0.54f,
+                                        uncheckedThumbColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackAlpha = 0.54f
+                                    )
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Hide Frequently Used Emotes")
+                                Switch(
+                                    checked = hideFrequentlyUsed.value,
+                                    onCheckedChange = {
+                                        hideFrequentlyUsed.value = it
+                                        app.preferences?.edit()?.putBoolean("hide-frequently-used-emotes-keyboard", it)?.apply()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = AccentColor,
+                                        checkedTrackColor = AccentColor,
+                                        checkedTrackAlpha = 0.54f,
+                                        uncheckedThumbColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackAlpha = 0.54f
+                                    )
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Hide Repositories")
+                                Switch(
+                                    checked = hideRepos.value,
+                                    onCheckedChange = {
+                                        hideRepos.value = it
+                                        app.preferences?.edit()?.putBoolean("hide-repositories-keyboard", it)?.apply()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = AccentColor,
+                                        checkedTrackColor = AccentColor,
+                                        checkedTrackAlpha = 0.54f,
+                                        uncheckedThumbColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackAlpha = 0.54f
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Container {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = "")
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Theme", fontSize = 20.sp, fontWeight = FontWeight(700))
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            val lightThemeChecked = remember { mutableStateOf(!darkMode.value!!) }
+                            val darkThemeChecked = remember { mutableStateOf(darkMode.value!!) }
+                            val systemDarkModeChecked = remember {
+                                mutableStateOf(systemDarkMode.value!!)
+                            }
+
+                            if (!systemDarkModeChecked.value) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = "Enable Light Theme")
+                                    Switch(
+                                        checked = lightThemeChecked.value,
+                                        onCheckedChange = {
+                                            lightThemeChecked.value = it
+                                            darkThemeChecked.value = !it
+                                            app.preferences?.edit()?.putBoolean("dark-keyboard", false)
+                                                ?.apply()
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = AccentColor,
+                                            checkedTrackColor = AccentColor,
+                                            checkedTrackAlpha = 0.54f,
+                                            uncheckedThumbColor = MaterialTheme.colors.primary,
+                                            uncheckedTrackColor = MaterialTheme.colors.primary,
+                                            uncheckedTrackAlpha = 0.54f
+                                        )
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = "Enable Dark Theme")
+                                    Switch(
+                                        checked = darkThemeChecked.value,
+                                        onCheckedChange = {
+                                            darkThemeChecked.value = it
+                                            lightThemeChecked.value = !it
+                                            app.preferences?.edit()?.putBoolean("dark-keyboard", true)
+                                                ?.apply()
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = AccentColor,
+                                            checkedTrackColor = AccentColor,
+                                            checkedTrackAlpha = 0.54f,
+                                            uncheckedThumbColor = MaterialTheme.colors.primary,
+                                            uncheckedTrackColor = MaterialTheme.colors.primary,
+                                            uncheckedTrackAlpha = 0.54f
+                                        )
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = "Use System Theme")
+                                Switch(
+                                    checked = systemDarkModeChecked.value,
+                                    onCheckedChange = {
+                                        systemDarkModeChecked.value = it
+                                        app.preferences?.edit()?.putBoolean("system-dark-keyboard", it)
+                                            ?.apply()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = AccentColor,
+                                        checkedTrackColor = AccentColor,
+                                        checkedTrackAlpha = 0.54f,
+                                        uncheckedThumbColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackColor = MaterialTheme.colors.primary,
+                                        uncheckedTrackAlpha = 0.54f
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Container {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = "")
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Activation", fontSize = 20.sp, fontWeight = FontWeight(700))
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    context.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+                                },
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = AccentColor,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .width(300.dp)
+                                    .padding(horizontal = 10.dp)
+                            ) {
+                                Text(text = "Enable Nitroless Keyboard")
+                            }
+                            Button(
+                                onClick = {
+                                    inputMethodManager.showInputMethodPicker()
+                                },
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = AccentColor,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .width(300.dp)
+                                    .padding(horizontal = 10.dp)
+                            ) {
+                                Text(text = "Select Nitroless Keyboard")
+                            }
                         }
                     }
                 }
@@ -97,6 +333,13 @@ fun Settings(navController: NavHostController) {
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = "")
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Test Keyboard", fontSize = 20.sp, fontWeight = FontWeight(700))
+                        }
                         TextField(
                             value = text,
                             onValueChange = { value ->

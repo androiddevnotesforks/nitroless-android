@@ -16,6 +16,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
@@ -32,10 +33,10 @@ import com.paraskcd.nitroless.ui.theme.TextDarkColor
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoViewModel, repos: List<Repo>?) {
+fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoViewModel, repos: List<Repo>?, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int) {
     Column(
         modifier = Modifier
-            .background(BGPrimaryDarkColor)
+            .background(bgPrimaryColor)
             .fillMaxWidth()
             .height(420.dp),
         verticalArrangement = Arrangement.SpaceBetween
@@ -43,15 +44,15 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
         if (repos != null && selectedRepo != null) {
             Column(modifier = Modifier.height(360.dp)) {
                 if (selectedRepo.favouriteEmotes != null && selectedRepo.favouriteEmotes!!.isNotEmpty()) {
-                    FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = selectedRepo.favouriteEmotes!!)
+                    FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = selectedRepo.favouriteEmotes!!, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor)
                 }
-                SelectedRepo(context = context, selectedRepo = selectedRepo, viewModel = viewModel)
+                SelectedRepo(context = context, selectedRepo = selectedRepo, viewModel = viewModel, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor)
             }
-            BottomBar(context = context, repos = repos, viewModel = viewModel)
+            BottomBar(context = context, repos = repos, viewModel = viewModel, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor, backspace_icon)
         } else {
             Card(
-                backgroundColor = BGSecondaryDarkColor,
-                contentColor = TextDarkColor,
+                backgroundColor = bgSecondaryColor,
+                contentColor = textColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -59,9 +60,10 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                     .padding(horizontal = 10.dp),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+                    color = bgTertiaryColor.copy(alpha = 0.1F)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp),
+                elevation = 10.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -78,12 +80,12 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
 }
 
 @Composable
-fun SelectedRepo(context: Context, selectedRepo: Repo, viewModel: RepoViewModel) {
+fun SelectedRepo(context: Context, selectedRepo: Repo, viewModel: RepoViewModel, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color) {
     val clipboardManager = LocalClipboardManager.current
 
     Card(
-        backgroundColor = BGSecondaryDarkColor,
-        contentColor = TextDarkColor,
+        backgroundColor = bgSecondaryColor,
+        contentColor = textColor,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp)
@@ -91,9 +93,10 @@ fun SelectedRepo(context: Context, selectedRepo: Repo, viewModel: RepoViewModel)
             .padding(horizontal = 10.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = BGTertiaryDarkColor.copy(alpha = 0.1F)
+            color = bgTertiaryColor.copy(alpha = 0.1F)
         ),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = 10.dp
     ) {
         Column(
             modifier = Modifier
@@ -107,7 +110,8 @@ fun SelectedRepo(context: Context, selectedRepo: Repo, viewModel: RepoViewModel)
                     imageURL = selectedRepo.url + selectedRepo.icon,
                     imageDescription = "",
                     size = 25.dp,
-                    shape = CircleShape
+                    shape = CircleShape,
+                    bgSecondaryColor = bgSecondaryColor
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
@@ -133,7 +137,8 @@ fun SelectedRepo(context: Context, selectedRepo: Repo, viewModel: RepoViewModel)
                             imageURL = emoteURL,
                             imageDescription = emoteURL,
                             size = 32.dp,
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            bgSecondaryColor = bgSecondaryColor
                         )
                     }
                 }

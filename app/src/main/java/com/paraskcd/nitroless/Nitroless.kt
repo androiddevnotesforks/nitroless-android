@@ -1,15 +1,18 @@
 package com.paraskcd.nitroless
 
 import android.app.Application
-import androidx.room.Room
-import com.paraskcd.nitroless.data.RepoDatabase
-import com.paraskcd.nitroless.network.CommunityReposApi
-import com.paraskcd.nitroless.repository.CommunityReposRepository
-import com.paraskcd.nitroless.repository.RepoRepository
-import com.paraskcd.nitroless.utils.Constants
+import android.content.SharedPreferences
+import android.os.Build
+import androidx.annotation.RequiresApi
 import dagger.hilt.android.HiltAndroidApp
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 @HiltAndroidApp
-class Nitroless: Application() {}
+class Nitroless: Application() {
+    var preferences: SharedPreferences? = null
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun onCreate() {
+        super.onCreate()
+        preferences = getSharedPreferences(getProcessName() + "_preferences", MODE_PRIVATE)
+    }
+}

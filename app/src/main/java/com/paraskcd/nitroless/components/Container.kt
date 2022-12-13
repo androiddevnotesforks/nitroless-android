@@ -20,7 +20,8 @@ fun Container(content: @Composable () -> Unit) {
             .padding(bottom = 5.dp)
             .padding(horizontal = 10.dp),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = 10.dp
     ) {
         content()
     }
@@ -39,7 +40,8 @@ fun ContainerPill(content: @Composable () -> Unit) {
             width = 1.dp,
             color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)
         ),
-        shape = CircleShape
+        shape = CircleShape,
+        elevation = 10.dp
     ) {
         content()
     }
@@ -58,7 +60,8 @@ fun DarkContainerPill(content: @Composable () -> Unit) {
             width = 1.dp,
             color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)
         ),
-        shape = CircleShape
+        shape = CircleShape,
+        elevation = 10.dp
     ) {
         content()
     }
@@ -74,7 +77,8 @@ fun DarkContainer(content: @Composable () -> Unit) {
             .padding(bottom = 5.dp)
             .padding(horizontal = 10.dp),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primaryVariant.copy(alpha = 0.1F)),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = 10.dp
     ) {
         content()
     }

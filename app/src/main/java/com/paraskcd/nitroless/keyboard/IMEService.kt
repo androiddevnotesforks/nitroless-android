@@ -1,6 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.paraskcd.nitroless.keyboard
 
+import android.app.Application
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.paraskcd.nitroless.Nitroless
 import com.paraskcd.nitroless.repository.RepoRepository
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.hilt.android.AndroidEntryPoint
