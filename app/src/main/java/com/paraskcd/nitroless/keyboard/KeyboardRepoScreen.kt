@@ -33,7 +33,7 @@ import com.paraskcd.nitroless.ui.theme.TextDarkColor
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoViewModel, repos: List<Repo>?, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int) {
+fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoViewModel, repos: List<Repo>?, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int, hideRepositories: Boolean, hideFavouriteEmotes: Boolean) {
     Column(
         modifier = Modifier
             .background(bgPrimaryColor)
@@ -44,11 +44,39 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
         if (repos != null && selectedRepo != null) {
             Column(modifier = Modifier.height(360.dp)) {
                 if (selectedRepo.favouriteEmotes != null && selectedRepo.favouriteEmotes!!.isNotEmpty()) {
-                    FavouriteEmotes(context = context, viewModel = viewModel, favouriteEmotes = selectedRepo.favouriteEmotes!!, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor)
+                    FavouriteEmotes(
+                        context = context,
+                        viewModel = viewModel,
+                        favouriteEmotes = selectedRepo.favouriteEmotes!!,
+                        textColor = textColor,
+                        bgPrimaryColor = bgPrimaryColor,
+                        bgSecondaryColor = bgSecondaryColor,
+                        bgTertiaryColor = bgTertiaryColor,
+                        hideFrequentlyUsedEmotes = null,
+                        hideFavouriteEmotes = hideFavouriteEmotes
+                    )
                 }
-                SelectedRepo(context = context, selectedRepo = selectedRepo, viewModel = viewModel, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor)
+                SelectedRepo(
+                    context = context,
+                    selectedRepo = selectedRepo,
+                    viewModel = viewModel,
+                    textColor = textColor,
+                    bgPrimaryColor = bgPrimaryColor,
+                    bgSecondaryColor = bgSecondaryColor,
+                    bgTertiaryColor = bgTertiaryColor
+                )
             }
-            BottomBar(context = context, repos = repos, viewModel = viewModel, textColor = textColor, bgPrimaryColor = bgPrimaryColor, bgSecondaryColor = bgSecondaryColor, bgTertiaryColor = bgTertiaryColor, backspace_icon)
+            BottomBar(
+                context = context,
+                repos = repos,
+                viewModel = viewModel,
+                textColor = textColor,
+                bgPrimaryColor = bgPrimaryColor,
+                bgSecondaryColor = bgSecondaryColor,
+                bgTertiaryColor = bgTertiaryColor,
+                backspace_icon = backspace_icon,
+                hideRepositories = hideRepositories
+            )
         } else {
             Card(
                 backgroundColor = bgSecondaryColor,

@@ -132,6 +132,6 @@ class ComposeKeyboardView(context: Context): AbstractComposeView(context) {
             (context as IMEService).setInputView(ComposeKeyboardRepoView(context))
         }
 
-        KeyboardScreen(context, repos, frequentlyUsedEmotes, this.viewModel, favouriteEmotes, textColor, bgPrimaryColor, bgSecondaryColor, bgTertiaryColor, history_icon, backspace_icon)
+        KeyboardScreen(context, repos, frequentlyUsedEmotes, this.viewModel, favouriteEmotes, textColor, bgPrimaryColor, bgSecondaryColor, bgTertiaryColor, history_icon, backspace_icon, hideRepositories!!, hideFrequentlyUsedEmotes!!, hideFavouriteEmotes!!)
     }
 }

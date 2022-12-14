@@ -92,21 +92,6 @@ class ComposeKeyboardRepoView(context: Context): AbstractComposeView(context) {
                 }
             }
 
-        val history_icon =
-            if (systemDarkMode == true) {
-                if (isSystemInDarkTheme()) {
-                    com.paraskcd.nitroless.R.drawable.history_icon_keyboard
-                } else {
-                    com.paraskcd.nitroless.R.drawable.history_dark_icon_keyboard
-                }
-            } else {
-                if (darkMode == true) {
-                    com.paraskcd.nitroless.R.drawable.history_icon_keyboard
-                } else {
-                    com.paraskcd.nitroless.R.drawable.history_dark_icon_keyboard
-                }
-            }
-
         val backspace_icon =
             if (systemDarkMode == true) {
                 if (isSystemInDarkTheme()) {
@@ -126,6 +111,6 @@ class ComposeKeyboardRepoView(context: Context): AbstractComposeView(context) {
             (context as IMEService).setInputView(ComposeKeyboardView(context))
         }
 
-        KeyboardRepoScreen(context = context, selectedRepo = selectedRepo, viewModel = viewModel, repos = repos, textColor, bgPrimaryColor, bgSecondaryColor, bgTertiaryColor, backspace_icon)
+        KeyboardRepoScreen(context = context, selectedRepo = selectedRepo, viewModel = viewModel, repos = repos, textColor, bgPrimaryColor, bgSecondaryColor, bgTertiaryColor, backspace_icon, hideRepositories!!, hideFavouriteEmotes!!)
     }
 }
