@@ -116,7 +116,12 @@ class MainActivity : ComponentActivity() {
                             addRepo = { repoToAdd = it },
                             repoToAdd = repoToAdd,
                             addRepoButtonOnClick = {
-                                viewModel.addRepo(RepoTable(repoURL = repoToAdd))
+                                var repo = repoToAdd
+                                if(repo[repo.length - 1] != '/') {
+                                    repo += '/'
+                                }
+                                viewModel.addRepo(RepoTable(repoURL = repo))
+                                refreshCount++
                                 isAddRepoActive = false
                             },
                             cancelButtonOnClick = {
