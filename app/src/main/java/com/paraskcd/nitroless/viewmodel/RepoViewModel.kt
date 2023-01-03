@@ -45,12 +45,22 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
     private val _frequentlyUsedEmotes = MutableStateFlow<List<FrequentlyUsedEmotesTable>>(emptyList())
     val frequentlyUsedEmotes = _frequentlyUsedEmotes.asStateFlow()
 
+    private val _frequentlyUsedStickers = MutableStateFlow<List<FrequentlyUsedStickersTable>>(emptyList())
+    val frequentlyUsedStickers = _frequentlyUsedStickers.asStateFlow()
+
     private val _favouriteEmotes = MutableStateFlow<List<FavouriteEmotesTable>>(emptyList())
     val favouriteEmotes = _favouriteEmotes.asStateFlow()
+
+    private val _favouriteStickers = MutableStateFlow<List<FavouriteStickersTable>>(emptyList())
+    val favouriteStickers = _favouriteStickers.asStateFlow()
 
     private val _selectedEmote = MutableLiveData<FavouriteEmotesTable>()
     val selectedEmote: LiveData<FavouriteEmotesTable>
         get() = _selectedEmote
+
+    private val _selectedSticker = MutableLiveData<FavouriteStickersTable>()
+    val selectedSticker: LiveData<FavouriteStickersTable>
+        get() = _selectedSticker
 
     private val _selectedRepo = MutableLiveData<Repo>()
     val selectedRepo: LiveData<Repo>
@@ -72,13 +82,24 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 }
             }
         }
-        viewModelScope.launch (Dispatchers.IO){
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getAllFrequentlyUsedEmotes().distinctUntilChanged().collect {
                     listOfFrequentlyUsedemotes ->
                 if (listOfFrequentlyUsedemotes.isEmpty()) {
                     _frequentlyUsedEmotes.value = kotlin.collections.emptyList()
                 } else {
                     _frequentlyUsedEmotes.value = listOfFrequentlyUsedemotes
+                }
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getAllFrequentlyUsedStickers().distinctUntilChanged().collect {
+                listOfFrequentlyUsedStickers ->
+
+                if (listOfFrequentlyUsedStickers.isEmpty()) {
+                    _frequentlyUsedStickers.value = emptyList()
+                } else {
+                    _frequentlyUsedStickers.value = listOfFrequentlyUsedStickers
                 }
             }
         }
@@ -92,6 +113,16 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                 }
             }
         }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getAllFavouriteStickers().distinctUntilChanged().collect {
+                listOfFavouriteStickers ->
+                if (listOfFavouriteStickers.isEmpty()) {
+                    _favouriteStickers.value = emptyList()
+                } else {
+                    _favouriteStickers.value = listOfFavouriteStickers
+                }
+            }
+        }
     }
 
     suspend fun getReposData() {
@@ -100,7 +131,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
             val repoList = mutableListOf<Repo>()
             repoURLS.value.forEachIndexed() { index, repo ->
                 val favEmotes = mutableListOf<FavouriteEmotesTable>()
-
+                val favStickers = mutableListOf<FavouriteStickersTable>()
                 val retrofit: Retrofit = Retrofit.Builder().baseUrl(repo.repoURL).addConverterFactory(GsonConverterFactory.create()).build()
                 val api: ReposApi = retrofit.create(ReposApi::class.java)
                 val dataOrException = DataOrException<Repo, Boolean, Exception>()
@@ -110,11 +141,17 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
                         favEmotes.add(it)
                     }
                 }
+                favouriteStickers.value.forEach {
+                    if (it.repoURL == repo.repoURL) {
+                        favStickers.add(it)
+                    }
+                }
 
                 if (repoData.loading == false) {
                     repoData.data?.id = repo.id
                     repoData.data?.url = repo.repoURL
                     repoData.data?.favouriteEmotes = favEmotes
+                    repoData.data?.favouriteStickers = favStickers
                     repoList.add(repoData.data!!)
                 }
 
@@ -167,6 +204,25 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
         _selectedEmote.value = selectedEmote
     }
 
+    fun deselectEmote() {
+        _selectedEmote.value = null
+    }
+
+    fun selectSticker(sticker: FavouriteStickersTable) {
+        var selectedSticker: FavouriteStickersTable = sticker
+        this.favouriteStickers.value.forEach {
+            favouriteSticker ->
+            if (sticker.repoURL == favouriteSticker.repoURL && sticker.stickerURL == favouriteSticker.stickerURL) {
+                selectedSticker = favouriteSticker
+            }
+        }
+        _selectedSticker.value = selectedSticker
+    }
+
+    fun deselectSticker() {
+        _selectedSticker.value = null
+    }
+
     fun selectRepo(repo: Repo) {
         viewModelScope.launch {
             val newRepoList = mutableListOf<Repo>()
@@ -211,13 +267,31 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
             }
         }
 
-        if (_frequentlyUsedEmotes.value!!.size == 25) {
+        if (_frequentlyUsedEmotes.value!!.size > 24) {
             deleteFrequentlyUsedEmote(_frequentlyUsedEmotes.value!![0])
         }
 
         repository.addFrequentlyUsedEmote(emote)
     }
+    fun addFrequentlyUsedSticker(sticker: FrequentlyUsedStickersTable) = viewModelScope.launch {
+        Log.d("Sticker -", sticker.toString())
+
+        _frequentlyUsedStickers.value!!.forEach {
+            frequentlyUsedSticker ->
+            if (frequentlyUsedSticker.stickerURL == sticker.stickerURL) {
+                deleteFrequentlyUsedSticker(frequentlyUsedSticker)
+            }
+        }
+
+        if (_frequentlyUsedStickers.value!!.size > 24) {
+            deleteFrequentlyUsedSticker(_frequentlyUsedStickers.value!![0])
+        }
+
+        repository.addFrequentlyUsedSticker(sticker)
+    }
     fun deleteFrequentlyUsedEmote(emote: FrequentlyUsedEmotesTable) = viewModelScope.launch { repository.deleteFrequentlyUsedEmote(emote) }
+
+    fun deleteFrequentlyUsedSticker(sticker: FrequentlyUsedStickersTable) = viewModelScope.launch { repository.deleteFrequentlyUsedSticker(sticker) }
 
     fun addFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch {
         _favouriteEmotes.value.forEach { favouriteEmote ->
@@ -228,5 +302,18 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository, 
 
         repository.addFavouriteEmote(emote)
     }
+
+    fun addFavouriteSticker(sticker: FavouriteStickersTable) = viewModelScope.launch {
+        _favouriteStickers.value.forEach { favouriteSticker ->
+            if (favouriteSticker.stickerURL == sticker.stickerURL && favouriteSticker.repoURL == sticker.repoURL) {
+                deleteFavouriteSticker(favouriteSticker)
+            }
+        }
+
+        repository.addFavouriteSticker(sticker)
+    }
+
     fun deleteFavouriteEmote(emote: FavouriteEmotesTable) = viewModelScope.launch { repository.deleteFavouriteEmote(emote) }
+
+    fun deleteFavouriteSticker(sticker: FavouriteStickersTable) = viewModelScope.launch { repository.deleteFavouriteSticker(sticker) }
 }

@@ -13,5 +13,8 @@ data class Repo(
     val keywords: String?,
     val name: String,
     val path: String,
-    var favouriteEmotes: List<FavouriteEmotesTable>?
+    val stickerPath: String?,
+    val stickers: List<Sticker>?,
+    var favouriteEmotes: List<FavouriteEmotesTable>?,
+    var favouriteStickers: List<FavouriteStickersTable>?
 )

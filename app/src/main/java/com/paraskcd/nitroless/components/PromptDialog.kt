@@ -16,11 +16,10 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.paraskcd.nitroless.model.Emote
-import com.paraskcd.nitroless.model.FavouriteEmotesTable
-import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
+import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.ui.theme.AccentColor
 import com.paraskcd.nitroless.ui.theme.Danger
 import com.paraskcd.nitroless.utils.NetworkImage
@@ -57,7 +56,7 @@ fun DeleteRepoPromptDialog(
                         .fillMaxWidth()
                         .padding(20.dp)) {
                         Text(
-                            "Remove Repository - ${repoName}",
+                            "Remove Repository - $repoName",
                             fontSize = 20.sp,
                             fontWeight = FontWeight(700)
                         )
@@ -214,7 +213,8 @@ fun AddRepoPromptDialog(
 fun ContextMenuPrompt(
     show: Boolean,
     cancelButtonOnClick: () -> Unit,
-    selectedEmote: FavouriteEmotesTable,
+    selectedEmote: FavouriteEmotesTable?,
+    selectedSticker: FavouriteStickersTable?,
     viewModel: RepoViewModel,
     refresh: () -> Unit
 ) {
@@ -225,9 +225,18 @@ fun ContextMenuPrompt(
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val favouriteEmotes = viewModel.favouriteEmotes.collectAsState().value
+    val favouriteStickers = viewModel.favouriteStickers.collectAsState().value
 
-    favouriteEmotes.forEach {
-        exists = it == selectedEmote
+    if (selectedEmote != null) {
+        favouriteEmotes.forEach {
+            exists = it == selectedEmote
+        }
+    }
+
+    if (selectedSticker != null) {
+        favouriteStickers.forEach {
+            exists = it == selectedSticker
+        }
     }
 
     BackHandler(enabled = show) {
@@ -250,50 +259,34 @@ fun ContextMenuPrompt(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Column(
-                    modifier = Modifier
-                        .width(400.dp)
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    NetworkImage(imageURL = selectedEmote.emoteURL, imageDescription = "", size = 50.dp, shape = RoundedCornerShape(10.dp))
-                    DarkContainer {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Button(
-                                onClick = {
-                                    val emoteURL = selectedEmote.emoteURL
-                                    viewModel.addFrequentlyUsedEmote(
-                                        emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
-                                    )
-                                    clipboardManager.setText(AnnotatedString(emoteURL))
-                                    Toast.makeText(
-                                        context,
-                                        "Copied Emote",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    cancelButtonOnClick()
-                                },
-                                shape = CircleShape,
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = AccentColor,
-                                    contentColor = Color.White
-                                ),
+                if (selectedEmote != null) {
+                    Column(
+                        modifier = Modifier
+                            .width(400.dp)
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        NetworkImage(imageURL = selectedEmote.emoteURL, imageDescription = "", size = 50.dp, shape = RoundedCornerShape(10.dp))
+                        DarkContainer {
+                            Column(
                                 modifier = Modifier
-                                    .width(250.dp)
-                                    .padding(horizontal = 10.dp)
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "Copy")
-                            }
-                            if (exists) {
                                 Button(
                                     onClick = {
-                                        viewModel.deleteFavouriteEmote(selectedEmote)
-                                        refresh()
+                                        val emoteURL = selectedEmote.emoteURL
+                                        viewModel.addFrequentlyUsedEmote(
+                                            emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
+                                        )
+                                        clipboardManager.setText(AnnotatedString(emoteURL))
+                                        Toast.makeText(
+                                            context,
+                                            "Copied Emote",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        viewModel.deselectEmote()
                                         cancelButtonOnClick()
                                     },
                                     shape = CircleShape,
@@ -305,13 +298,95 @@ fun ContextMenuPrompt(
                                         .width(250.dp)
                                         .padding(horizontal = 10.dp)
                                 ) {
-                                    Text(text = "Remove from Favourites")
+                                    Text(text = "Copy", textAlign = TextAlign.Center)
                                 }
-                            } else {
+                                if (exists) {
+                                    Button(
+                                        onClick = {
+                                            viewModel.deleteFavouriteEmote(selectedEmote)
+                                            refresh()
+                                            viewModel.deselectEmote()
+                                            cancelButtonOnClick()
+                                        },
+                                        shape = CircleShape,
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = AccentColor,
+                                            contentColor = Color.White
+                                        ),
+                                        modifier = Modifier
+                                            .width(250.dp)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        Text(text = "Remove from Favourite Emotes", textAlign = TextAlign.Center)
+                                    }
+                                } else {
+                                    Button(
+                                        onClick = {
+                                            viewModel.addFavouriteEmote(selectedEmote)
+                                            refresh()
+                                            viewModel.deselectEmote()
+                                            cancelButtonOnClick()
+                                        },
+                                        shape = CircleShape,
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = AccentColor,
+                                            contentColor = Color.White
+                                        ),
+                                        modifier = Modifier
+                                            .width(250.dp)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        Text(text = "Add to Favourite Emotes", textAlign = TextAlign.Center)
+                                    }
+                                }
                                 Button(
                                     onClick = {
-                                        viewModel.addFavouriteEmote(selectedEmote)
-                                        refresh()
+                                        viewModel.deselectEmote()
+                                        cancelButtonOnClick()
+                                    },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = Danger,
+                                        contentColor = Color.White
+                                    ),
+                                    modifier = Modifier
+                                        .width(250.dp)
+                                        .padding(horizontal = 10.dp)
+                                ) {
+                                    Text(text = "Cancel", textAlign = TextAlign.Center)
+                                }
+                            }
+                        }
+                    }
+                }
+                if (selectedSticker != null) {
+                    Column(
+                        modifier = Modifier
+                            .width(400.dp)
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        NetworkImage(imageURL = selectedSticker.stickerURL, imageDescription = "", size = 72.dp, shape = RoundedCornerShape(10.dp))
+                        DarkContainer {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Button(
+                                    onClick = {
+                                        val stickerURL = selectedSticker.stickerURL
+                                        viewModel.addFrequentlyUsedSticker(
+                                            sticker = FrequentlyUsedStickersTable(stickerURL = stickerURL)
+                                        )
+                                        clipboardManager.setText(AnnotatedString(stickerURL))
+                                        Toast.makeText(
+                                            context,
+                                            "Copied Sticker",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        viewModel.deselectSticker()
                                         cancelButtonOnClick()
                                     },
                                     shape = CircleShape,
@@ -320,26 +395,66 @@ fun ContextMenuPrompt(
                                         contentColor = Color.White
                                     ),
                                     modifier = Modifier
-                                        .width(250.dp)
+                                        .width(290.dp)
                                         .padding(horizontal = 10.dp)
                                 ) {
-                                    Text(text = "Add to Favourites")
+                                    Text(text = "Copy", textAlign = TextAlign.Center)
                                 }
-                            }
-                            Button(
-                                onClick = {
-                                    cancelButtonOnClick()
-                                },
-                                shape = CircleShape,
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = Danger,
-                                    contentColor = Color.White
-                                ),
-                                modifier = Modifier
-                                    .width(250.dp)
-                                    .padding(horizontal = 10.dp)
-                            ) {
-                                Text(text = "Cancel")
+                                if (exists) {
+                                    Button(
+                                        onClick = {
+                                            viewModel.deleteFavouriteSticker(selectedSticker)
+                                            refresh()
+                                            viewModel.deselectSticker()
+                                            cancelButtonOnClick()
+                                        },
+                                        shape = CircleShape,
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = AccentColor,
+                                            contentColor = Color.White
+                                        ),
+                                        modifier = Modifier
+                                            .width(290.dp)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        Text(text = "Remove from Favourite Stickers", textAlign = TextAlign.Center)
+                                    }
+                                } else {
+                                    Button(
+                                        onClick = {
+                                            viewModel.addFavouriteSticker(selectedSticker)
+                                            refresh()
+                                            viewModel.deselectSticker()
+                                            cancelButtonOnClick()
+                                        },
+                                        shape = CircleShape,
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = AccentColor,
+                                            contentColor = Color.White
+                                        ),
+                                        modifier = Modifier
+                                            .width(290.dp)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        Text(text = "Add to Favourite Stickers", textAlign = TextAlign.Center)
+                                    }
+                                }
+                                Button(
+                                    onClick = {
+                                        viewModel.deselectSticker()
+                                        cancelButtonOnClick()
+                                    },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = Danger,
+                                        contentColor = Color.White
+                                    ),
+                                    modifier = Modifier
+                                        .width(290.dp)
+                                        .padding(horizontal = 10.dp)
+                                ) {
+                                    Text(text = "Cancel", textAlign = TextAlign.Center)
+                                }
                             }
                         }
                     }

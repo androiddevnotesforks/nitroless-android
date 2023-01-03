@@ -15,10 +15,8 @@ import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.paraskcd.nitroless.components.*
-import com.paraskcd.nitroless.model.FavouriteEmotesTable
-import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
-import com.paraskcd.nitroless.model.Repo
-import com.paraskcd.nitroless.model.RepoTable
+import com.paraskcd.nitroless.enums.RepoPage
+import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.screens.Repo
 import com.paraskcd.nitroless.screens.Settings
 import com.paraskcd.nitroless.ui.theme.*
@@ -44,10 +42,17 @@ class MainActivity : ComponentActivity() {
 
             val frequentlyUsedEmotes = viewModel.frequentlyUsedEmotes.collectAsState().value
             val favouriteEmotes = viewModel.favouriteEmotes.collectAsState().value
+            val frequentlyUsedStickers = viewModel.frequentlyUsedStickers.collectAsState().value
+            val favouriteStickers = viewModel.favouriteStickers.collectAsState().value
             val selectedRepo = viewModel.selectedRepo.observeAsState().value
             val repos = viewModel.repos.observeAsState().value
             val loadingRepos = viewModel.loadingRepos.observeAsState().value
             val selectedEmote = viewModel.selectedEmote.observeAsState().value
+            val selectedSticker = viewModel.selectedSticker.observeAsState().value
+
+            val repoMenu = remember {
+                mutableStateOf(RepoPage.EMOTES.value)
+            }
 
             var refreshCount by remember { mutableStateOf(1) }
 
@@ -92,7 +97,18 @@ class MainActivity : ComponentActivity() {
                             repoEmptyFlag = repos != null && repos.isEmpty(),
                             showDeleteRepoDialog = { isDeleteRepoActive = it },
                             showContextMenuPromptDialog = { isContextMenuPromptActive = it },
-                            favouriteEmotes = favouriteEmotes
+                            favouriteEmotes = favouriteEmotes,
+                            frequentlyUsedStickers = frequentlyUsedStickers,
+                            favouriteStickers = favouriteStickers,
+                            repoMenu = repoMenu.value,
+                            onClickRepoMenu = { value ->
+                                repoMenu.value = value
+                                if (isDrawerActive) {
+                                    isDrawerActive = false
+                                }
+                            },
+                            openCommunityRepos = { isCommunityReposActive = it },
+                            isCommunityReposActive = isCommunityReposActive
                         )
                         Drawer(
                             isHomeActive = isHomeActive,
@@ -104,7 +120,8 @@ class MainActivity : ComponentActivity() {
                             refresh = { refreshCount ++ },
                             repos = repos,
                             loadingRepos = loadingRepos,
-                            showAddRepoDialog = { isAddRepoActive = it }
+                            showAddRepoDialog = { isAddRepoActive = it },
+                            resetRepoMenu = { repoMenu.value = RepoPage.EMOTES.value}
                         )
                         CommunityReposUI(
                             isCommunityReposActive = isCommunityReposActive,
@@ -152,8 +169,21 @@ class MainActivity : ComponentActivity() {
                                     isContextMenuPromptActive = false
                                 },
                                 selectedEmote = selectedEmote,
+                                selectedSticker = null,
                                 viewModel = viewModel,
                                 refresh = { refreshCount++ }
+                            )
+                        }
+                        if (selectedSticker != null) {
+                            ContextMenuPrompt(
+                                show = isContextMenuPromptActive,
+                                cancelButtonOnClick = {
+                                    isContextMenuPromptActive = false
+                                },
+                                selectedSticker = selectedSticker,
+                                selectedEmote = null,
+                                viewModel = viewModel,
+                                refresh = { refreshCount ++}
                             )
                         }
                     }
@@ -164,7 +194,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit, showContextMenuPromptDialog: (Boolean) -> Unit, favouriteEmotes: List<FavouriteEmotesTable>) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit, showContextMenuPromptDialog: (Boolean) -> Unit, favouriteEmotes: List<FavouriteEmotesTable>, frequentlyUsedStickers: List<FrequentlyUsedStickersTable>, favouriteStickers: List<FavouriteStickersTable>, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -180,10 +210,16 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         viewModel = viewModel,
                         frequentlyUsedEmotes = frequentlyUsedEmotes,
                         repoEmptyFlag = repoEmptyFlag,
-                        favouriteEmotes = favouriteEmotes
+                        favouriteEmotes = favouriteEmotes,
+                        frequentlyUsedStickers = frequentlyUsedStickers,
+                        favouriteStickers = favouriteStickers,
+                        repoMenu = repoMenu,
+                        onClickRepoMenu = { value -> onClickRepoMenu(value) },
+                        isCommunityReposActive = isCommunityReposActive
                     )
                 } else {
                     Repo(
+                        isDrawerActive = isDrawerActive,
                         openDrawer = { openDrawer(true) },
                         closeDrawer = { openDrawer(false) },
                         viewModel = viewModel,
@@ -192,7 +228,11 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         selectedRepo = selectedRepo,
                         refresh = { refresh() },
                         showDeleteRepoDialog = { showDeleteRepoDialog(true) },
-                        showContextMenuPromptDialog = { showContextMenuPromptDialog(true) }
+                        showContextMenuPromptDialog = { showContextMenuPromptDialog(true) },
+                        repoMenu = repoMenu,
+                        onClickRepoMenu = { value -> onClickRepoMenu(value) },
+                        openCommunityRepos = { openCommunityRepos(it) },
+                        isCommunityReposActive = isCommunityReposActive
                     )
                 }
             }

@@ -145,13 +145,20 @@ fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRe
                         if (communityRepo.author != null) {
                             Text(text = "By ${communityRepo.author}", fontWeight = FontWeight.Light, fontSize = 12.sp)
                         }
-                        Text(text = "${communityRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp)
+                        Row() {
+                            Text(text = "${communityRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp)
+                            if (communityRepo.stickers?.isNotEmpty() == true) {
+                                Text(text = " & ${communityRepo.stickers!!.size!!} Stickers", fontWeight = FontWeight.Light, fontSize = 12.sp)
+                            }
+                        }
                     }
                 }
                 if(loadingRepos == true) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colors.onPrimary,
-                        modifier = Modifier.padding(10.dp).size(32.dp)
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .size(32.dp)
                     )
                 } else {
                     var exists: Boolean = false
