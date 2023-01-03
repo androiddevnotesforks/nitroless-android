@@ -5,13 +5,11 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.*
-import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.*
 import com.paraskcd.nitroless.components.*
@@ -35,8 +33,6 @@ class MainActivity : ComponentActivity() {
             var isDrawerActive by remember { mutableStateOf(false) }
             var isCommunityReposActive by remember { mutableStateOf(false) }
             var isContextMenuPromptActive by remember { mutableStateOf(false) }
-
-            val animateDrawer: Dp by animateDpAsState( if (isDrawerActive) 72.dp else 0.dp )
 
             val viewModel: RepoViewModel = hiltViewModel()
 
@@ -87,12 +83,10 @@ class MainActivity : ComponentActivity() {
                         Navigation(
                             viewModel = viewModel,
                             openDrawer = { isDrawerActive = it },
-                            animateDrawer = animateDrawer,
                             isDrawerActive = isDrawerActive,
                             isHomeActive = isHomeActive,
                             makeHomeActive = { isHomeActive = it },
                             frequentlyUsedEmotes = frequentlyUsedEmotes,
-                            refresh = { refreshCount ++ },
                             selectedRepo = selectedRepo,
                             repoEmptyFlag = repos != null && repos.isEmpty(),
                             showDeleteRepoDialog = { isDeleteRepoActive = it },
@@ -194,7 +188,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateDrawer: Dp, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, refresh: () -> Unit, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit, showContextMenuPromptDialog: (Boolean) -> Unit, favouriteEmotes: List<FavouriteEmotesTable>, frequentlyUsedStickers: List<FrequentlyUsedStickersTable>, favouriteStickers: List<FavouriteStickersTable>, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
+fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, isDrawerActive: Boolean, isHomeActive: Boolean, makeHomeActive: (Boolean) -> Unit, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, selectedRepo: Repo?, repoEmptyFlag: Boolean, showDeleteRepoDialog: (Boolean) -> Unit, showContextMenuPromptDialog: (Boolean) -> Unit, favouriteEmotes: List<FavouriteEmotesTable>, frequentlyUsedStickers: List<FrequentlyUsedStickersTable>, favouriteStickers: List<FavouriteStickersTable>, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
     val navController = rememberNavController()
 
     NavHost( navController = navController, startDestination = "home" ) {
@@ -205,7 +199,6 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         openDrawer = { openDrawer(true) },
                         closeDrawer = { openDrawer(false) },
                         navController = navController,
-                        animateDrawer = animateDrawer,
                         isDrawerActive = isDrawerActive,
                         viewModel = viewModel,
                         frequentlyUsedEmotes = frequentlyUsedEmotes,
@@ -223,10 +216,8 @@ fun Navigation(viewModel: RepoViewModel, openDrawer: (Boolean) -> Unit, animateD
                         openDrawer = { openDrawer(true) },
                         closeDrawer = { openDrawer(false) },
                         viewModel = viewModel,
-                        animateDrawer = animateDrawer,
                         closeRepo = { makeHomeActive(true) },
                         selectedRepo = selectedRepo,
-                        refresh = { refresh() },
                         showDeleteRepoDialog = { showDeleteRepoDialog(true) },
                         showContextMenuPromptDialog = { showContextMenuPromptDialog(true) },
                         repoMenu = repoMenu,

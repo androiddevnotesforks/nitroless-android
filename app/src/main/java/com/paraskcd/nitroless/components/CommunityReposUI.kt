@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -134,26 +133,25 @@ fun CommunityReposUI(isCommunityReposActive: Boolean, viewModel: RepoViewModel, 
 
 @Composable
 fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRepo: () -> Unit, onRemoveRepo: (RepoTable) -> Unit, loadingRepos: Boolean, repos: List<Repo>) {
-    val context = LocalContext.current
     ContainerPill {
         Box(modifier = modifier) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    NetworkImage(imageURL = communityRepo.url + communityRepo.icon, imageDescription = communityRepo.name, size = 50.dp, shape = CircleShape,)
+                    NetworkImage(imageURL = communityRepo.url + communityRepo.icon, imageDescription = communityRepo.name, size = 50.dp, shape = CircleShape)
                     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                         Text(text = communityRepo.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         if (communityRepo.author != null) {
                             Text(text = "By ${communityRepo.author}", fontWeight = FontWeight.Light, fontSize = 12.sp)
                         }
-                        Row() {
+                        Row {
                             Text(text = "${communityRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp)
                             if (communityRepo.stickers?.isNotEmpty() == true) {
-                                Text(text = " & ${communityRepo.stickers!!.size!!} Stickers", fontWeight = FontWeight.Light, fontSize = 12.sp)
+                                Text(text = " & ${communityRepo.stickers.size} Stickers", fontWeight = FontWeight.Light, fontSize = 12.sp)
                             }
                         }
                     }
                 }
-                if(loadingRepos == true) {
+                if(loadingRepos) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colors.onPrimary,
                         modifier = Modifier
@@ -161,7 +159,7 @@ fun CommunityRepoRow(modifier: Modifier = Modifier, communityRepo: Repo, onAddRe
                             .size(32.dp)
                     )
                 } else {
-                    var exists: Boolean = false
+                    var exists = false
                     var id: UUID = UUID.randomUUID()
                     repos.forEach { repo ->
                         if (repo.url.equals(communityRepo.url)) {

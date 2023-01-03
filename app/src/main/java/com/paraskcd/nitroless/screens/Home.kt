@@ -1,13 +1,11 @@
 package com.paraskcd.nitroless
 
 import android.app.Activity
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -18,13 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.*
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.*
 import androidx.compose.ui.text.AnnotatedString
@@ -39,11 +32,9 @@ import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
 import com.paraskcd.nitroless.model.FrequentlyUsedStickersTable
 import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 @Composable
-fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, animateDrawer: Dp, isDrawerActive: Boolean, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean, favouriteEmotes: List<FavouriteEmotesTable>, frequentlyUsedStickers: List<FrequentlyUsedStickersTable>, favouriteStickers: List<FavouriteStickersTable>, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, isCommunityReposActive: Boolean ) {
+fun Home( openDrawer: () -> Unit, closeDrawer: () -> Unit, navController: NavHostController, isDrawerActive: Boolean, viewModel: RepoViewModel, frequentlyUsedEmotes: List<FrequentlyUsedEmotesTable>, repoEmptyFlag: Boolean, favouriteEmotes: List<FavouriteEmotesTable>, frequentlyUsedStickers: List<FrequentlyUsedStickersTable>, favouriteStickers: List<FavouriteStickersTable>, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, isCommunityReposActive: Boolean ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val activity = (LocalContext.current as? Activity)

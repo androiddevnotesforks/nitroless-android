@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.paraskcd.nitroless.ui.theme.AccentColor
 
@@ -45,7 +46,17 @@ fun Picker(repoMenu: Int, onClickRepoMenu: (Int) -> Unit) {
                         .clip(CircleShape)
                         .background(MaterialTheme.colors.primaryVariant)
                 },
-                text = { Text(text = text, color = MaterialTheme.colors.onPrimary) }
+                text = {
+                    Text(
+                        text = text,
+                        color =
+                        if (selected) {
+                            Color.White
+                        } else {
+                            MaterialTheme.colors.onPrimary
+                        }
+                    )
+                }
             )
         }
     }

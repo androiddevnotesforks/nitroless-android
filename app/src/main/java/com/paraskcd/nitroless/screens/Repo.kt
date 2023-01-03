@@ -1,11 +1,9 @@
 package com.paraskcd.nitroless.screens
 
-import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
@@ -23,33 +21,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.paraskcd.nitroless.R
 import com.paraskcd.nitroless.components.Container
 import com.paraskcd.nitroless.components.DarkContainerPill
 import com.paraskcd.nitroless.components.Picker
 import com.paraskcd.nitroless.components.TopBarRepo
 import com.paraskcd.nitroless.enums.RepoPage
 import com.paraskcd.nitroless.model.*
-import com.paraskcd.nitroless.ui.theme.AccentColor
 import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Repo(isDrawerActive: Boolean, animateDrawer: Dp, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, refresh: () -> Unit, showDeleteRepoDialog: () -> Unit, showContextMenuPromptDialog: () -> Unit, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
+fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, showDeleteRepoDialog: () -> Unit, showContextMenuPromptDialog: () -> Unit, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
     BackHandler {
         if (isCommunityReposActive) {
             openCommunityRepos(false)
