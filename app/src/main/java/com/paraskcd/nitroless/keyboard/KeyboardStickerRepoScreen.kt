@@ -1,9 +1,8 @@
 package com.paraskcd.nitroless.keyboard
 
 import android.content.Context
-import android.util.Log
+import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,22 +20,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.paraskcd.nitroless.R
-import com.paraskcd.nitroless.model.FrequentlyUsedEmotesTable
+import coil.imageLoader
+import com.paraskcd.nitroless.model.FrequentlyUsedStickersTable
 import com.paraskcd.nitroless.model.Repo
-import com.paraskcd.nitroless.ui.theme.*
+import com.paraskcd.nitroless.ui.theme.AccentColor
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 
 @Composable
-fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoViewModel, repos: List<Repo>?, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int, hideRepositories: Boolean, hideFavouriteEmotes: Boolean) {
-    val clipboardManager = LocalClipboardManager.current
-
+fun KeyboardStickersRepoScreen(context: Context, selectedRepo: Repo, repos: List<Repo>?, viewModel: RepoViewModel, textColor: Color, bgPrimaryColor: Color, bgSecondaryColor: Color, bgTertiaryColor: Color, backspace_icon: Int, hideRepositories: Boolean, hideFavouriteEmotes: Boolean) {
     Column(
         modifier = Modifier
             .background(bgPrimaryColor)
@@ -46,67 +40,63 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
     ) {
         if (repos != null && selectedRepo != null) {
             Column(modifier = Modifier.height(360.dp)) {
-                LazyVerticalGrid(modifier = Modifier.fillMaxHeight(), columns = GridCells.Fixed(5)) {
-                    if (selectedRepo.stickers != null) {
-                        item(span = { GridItemSpan(5) }) {
-                            TabRow(
-                                selectedTabIndex = 0,
-                                backgroundColor = bgTertiaryColor,
-                                modifier = Modifier
-                                    .padding(vertical = 10.dp, horizontal = 40.dp)
-                                    .shadow(elevation = 10.dp, shape = CircleShape)
-                                    .clip(CircleShape),
-                                indicator = { tabPositions: List<TabPosition> ->
-                                    Box {}
-                                },
-                                divider = @Composable {
-                                    Spacer(modifier = Modifier)
-                                }
-                            ) {
-                                val list = listOf("Emotes", "Stickers")
-                                list.forEachIndexed { index, text ->
-                                    val selected = 0 == index
-                                    Tab(
-                                        selected = selected,
-                                        onClick = {
-                                            Log.d("DEBUGGG", index.toString())
-                                            if (index == 0) {
-                                                (context as IMEService).setInputView(ComposeKeyboardRepoView(context))
-                                            } else {
-                                                (context as IMEService).setInputView(ComposeKeyboardStickersRepoView(context))
-                                            }
-                                        },
-                                        modifier =
-                                        if (selected) {
-                                            Modifier
-                                                .clip(CircleShape)
-                                                .background(AccentColor)
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxHeight(),
+                    columns = GridCells.Fixed(3)
+                ) {
+                    item(span = { GridItemSpan(7) }) {
+                        TabRow(
+                            selectedTabIndex = 1,
+                            backgroundColor = bgTertiaryColor,
+                            modifier = Modifier
+                                .padding(vertical = 10.dp, horizontal = 40.dp)
+                                .shadow(elevation = 10.dp, shape = CircleShape)
+                                .clip(CircleShape),
+                            indicator = { tabPositions: List<TabPosition> ->
+                                Box {}
+                            },
+                            divider = @Composable {
+                                Spacer(modifier = Modifier)
+                            }
+                        ) {
+                            val list = listOf("Emotes", "Stickers")
+                            list.forEachIndexed { index, text ->
+                                val selected = 1 == index
+                                Tab(
+                                    selected = selected,
+                                    onClick = {
+                                        if (index == 1) {
+                                            (context as IMEService).setInputView(ComposeKeyboardStickersRepoView(context))
                                         } else {
-                                            Modifier
-                                                .clip(CircleShape)
-                                                .background(bgTertiaryColor)
-                                        },
-                                        text = {
-                                            Text(
-                                                text = text,
-                                                color =
-                                                if (selected) {
-                                                    Color.White
-                                                } else {
-                                                    textColor
-                                                }
-                                            )
+                                            (context as IMEService).setInputView(ComposeKeyboardRepoView(context))
                                         }
-                                    )
-                                }
+                                    },
+                                    modifier =
+                                    if (selected) {
+                                        Modifier
+                                            .clip(CircleShape)
+                                            .background(AccentColor)
+                                    } else {
+                                        Modifier
+                                            .clip(CircleShape)
+                                            .background(bgTertiaryColor)
+                                    },
+                                    text = {
+                                        Text(
+                                            text = text,
+                                            color =
+                                            if (selected) {
+                                                Color.White
+                                            } else {
+                                                textColor
+                                            }
+                                        )
+                                    }
+                                )
                             }
                         }
-                    } else {
-                        item(span = { GridItemSpan(5) }) {
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
                     }
-                    if (selectedRepo.favouriteEmotes != null && selectedRepo.favouriteEmotes!!.isNotEmpty() && !hideFavouriteEmotes) {
+                    if (selectedRepo.favouriteStickers != null && selectedRepo.favouriteStickers!!.isNotEmpty() && !hideFavouriteEmotes) {
                         item(span = { GridItemSpan(7) }) {
                             Card(
                                 backgroundColor = bgSecondaryColor,
@@ -134,7 +124,7 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                                         Icon(Icons.Filled.Star, contentDescription = "")
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            "Favourite Emotes",
+                                            "Favourite Stickers",
                                             fontSize = 20.sp,
                                             fontWeight = FontWeight(700)
                                         )
@@ -142,7 +132,7 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                                 }
                             }
                         }
-                        items(selectedRepo.favouriteEmotes!!) { emote ->
+                        items(selectedRepo.favouriteStickers!!) { sticker ->
                             Card(
                                 backgroundColor = bgSecondaryColor,
                                 contentColor = textColor,
@@ -160,35 +150,34 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                             ) {
                                 Column(
                                     modifier = Modifier
-                                        .width(50.dp)
-                                        .height(50.dp),
+                                        .width(72.dp)
+                                        .height(120.dp),
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    val emoteURL = emote.emoteURL
+                                    val stickerURL = sticker.stickerURL
+
                                     IconButton(
                                         onClick = {
-                                            viewModel.addFrequentlyUsedEmote(
-                                                emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
+                                            viewModel.addFrequentlyUsedSticker(
+                                                sticker = FrequentlyUsedStickersTable(stickerURL = stickerURL)
                                             )
-                                            clipboardManager.setText(AnnotatedString(emoteURL))
-                                            (context as IMEService).currentInputConnection.commitText(emoteURL, emoteURL.length)
-                                            context.setInputView(ComposeKeyboardView(context))
+                                            context.imageLoader.diskCache?.get(stickerURL)?.use { snapshot ->
+                                                val imageFile = snapshot.data.toFile()
+                                                (context as IMEService).doCommitContent("Nitroless Emote", "image/webp", imageFile, format = Bitmap.CompressFormat.WEBP)
+                                            }
                                         }
                                     ) {
                                         NetworkKeyboardImage(
-                                            imageURL = emoteURL,
-                                            imageDescription = emoteURL,
-                                            size = 32.dp,
+                                            imageURL = stickerURL,
+                                            imageDescription = stickerURL,
+                                            size = 90.dp,
                                             shape = RoundedCornerShape(10.dp),
                                             bgSecondaryColor = bgSecondaryColor
                                         )
                                     }
                                 }
                             }
-                        }
-                        item(span = { GridItemSpan(5) }) {
-                            Spacer(modifier = Modifier.height(20.dp))
                         }
                     }
                     item(span = { GridItemSpan(5) }) {
@@ -232,8 +221,7 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                             }
                         }
                     }
-                    items(selectedRepo.emotes) { emote ->
-                        val emoteURL = selectedRepo.url + selectedRepo.path + "/" + emote.name + "." + emote.type
+                    items(selectedRepo.stickers!!) { sticker ->
                         Card(
                             backgroundColor = bgSecondaryColor,
                             contentColor = textColor,
@@ -251,25 +239,28 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .width(50.dp)
-                                    .height(50.dp),
+                                    .width(72.dp)
+                                    .height(120.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                val stickerURL = selectedRepo.url + selectedRepo.stickerPath + "/" + sticker.name + "." + sticker.type
+
                                 IconButton(
                                     onClick = {
-                                        viewModel.addFrequentlyUsedEmote(
-                                            emote = FrequentlyUsedEmotesTable(emoteURL = emoteURL)
+                                        viewModel.addFrequentlyUsedSticker(
+                                            sticker = FrequentlyUsedStickersTable(stickerURL = stickerURL)
                                         )
-                                        clipboardManager.setText(AnnotatedString(emoteURL))
-                                        (context as IMEService).currentInputConnection.commitText(emoteURL, emoteURL.length)
-                                        context.setInputView(ComposeKeyboardView(context))
+                                        context.imageLoader.diskCache?.get(stickerURL)?.use { snapshot ->
+                                            val imageFile = snapshot.data.toFile()
+                                            (context as IMEService).doCommitContent("Nitroless Emote", "image/webp", imageFile, format = Bitmap.CompressFormat.WEBP)
+                                        }
                                     }
                                 ) {
                                     NetworkKeyboardImage(
-                                        imageURL = emoteURL,
-                                        imageDescription = emoteURL,
-                                        size = 32.dp,
+                                        imageURL = stickerURL,
+                                        imageDescription = stickerURL,
+                                        size = 90.dp,
                                         shape = RoundedCornerShape(10.dp),
                                         bgSecondaryColor = bgSecondaryColor
                                     )
@@ -277,45 +268,16 @@ fun KeyboardRepoScreen(context: Context, selectedRepo: Repo?, viewModel: RepoVie
                             }
                         }
                     }
-                    item(span = { GridItemSpan(5) }) {
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                }
-            }
-            BottomBar(
-                context = context,
-                repos = repos,
-                viewModel = viewModel,
-                bgSecondaryColor = bgSecondaryColor,
-                backspace_icon = backspace_icon,
-                hideRepositories = hideRepositories
-            )
-        } else {
-            Card(
-                backgroundColor = bgSecondaryColor,
-                contentColor = textColor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp)
-                    .padding(bottom = 5.dp)
-                    .padding(horizontal = 10.dp),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = bgTertiaryColor.copy(alpha = 0.1F)
-                ),
-                shape = RoundedCornerShape(20.dp),
-                elevation = 10.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp)
-                ) {
-                    Text("Welcome to Nitroless", fontSize = 18.sp, fontWeight = FontWeight(700))
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text("Things might have gotten weird, and you now have this Error. For some reason the Keyboard couldn't load the Repos, please try again later.")
                 }
             }
         }
+        BottomStickerBar(
+            context = context,
+            repos = repos,
+            viewModel = viewModel,
+            bgSecondaryColor = bgSecondaryColor,
+            backspace_icon = backspace_icon,
+            hideRepositories = hideRepositories
+        )
     }
 }

@@ -28,14 +28,15 @@ fun NetworkImage(imageURL: String, imageDescription: String, size: Dp, shape: Sh
     val context = LocalContext.current
 
     val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(context = context).data(imageURL).build(),
+        model = ImageRequest.Builder(context = context).data(imageURL).diskCacheKey(imageURL)
+            .memoryCacheKey(imageURL).build(),
         imageLoader = ImageLoader.Builder(context = context).components {
             if (SDK_INT >= 28) {
                 add(ImageDecoderDecoder.Factory())
             } else {
                 add(GifDecoder.Factory())
             }
-        }.build()
+        }.crossfade(true).build()
     )
 
     Box(contentAlignment = Alignment.Center) {

@@ -20,6 +20,8 @@ import com.paraskcd.nitroless.screens.Settings
 import com.paraskcd.nitroless.ui.theme.*
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -115,7 +117,12 @@ class MainActivity : ComponentActivity() {
                             repos = repos,
                             loadingRepos = loadingRepos,
                             showAddRepoDialog = { isAddRepoActive = it },
-                            resetRepoMenu = { repoMenu.value = RepoPage.EMOTES.value}
+                            resetRepoMenu = {
+                                repoMenu.value = 2
+                                Timer().schedule(500) {
+                                    repoMenu.value = RepoPage.EMOTES.value
+                                }
+                            }
                         )
                         CommunityReposUI(
                             isCommunityReposActive = isCommunityReposActive,

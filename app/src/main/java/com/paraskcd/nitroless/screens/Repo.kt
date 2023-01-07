@@ -1,14 +1,24 @@
 package com.paraskcd.nitroless.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ContentValues
+import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -29,6 +39,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
+import coil.memory.MemoryCache
 import com.paraskcd.nitroless.components.Container
 import com.paraskcd.nitroless.components.DarkContainerPill
 import com.paraskcd.nitroless.components.Picker
@@ -37,8 +50,13 @@ import com.paraskcd.nitroless.enums.RepoPage
 import com.paraskcd.nitroless.model.*
 import com.paraskcd.nitroless.utils.NetworkImage
 import com.paraskcd.nitroless.viewmodel.RepoViewModel
+import java.io.IOException
+import java.util.Timer
+import java.util.logging.Handler
+import kotlin.concurrent.schedule
+import kotlin.concurrent.timerTask
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Composable
 fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Unit, viewModel: RepoViewModel, closeRepo: () -> Unit, selectedRepo: Repo?, showDeleteRepoDialog: () -> Unit, showContextMenuPromptDialog: () -> Unit, repoMenu: Int, onClickRepoMenu: (Int) -> Unit, openCommunityRepos: (Boolean) -> Unit, isCommunityReposActive: Boolean) {
     BackHandler {
@@ -46,12 +64,19 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
             openCommunityRepos(false)
         } else {
             if (repoMenu == RepoPage.STICKERS.value) {
-                onClickRepoMenu(RepoPage.EMOTES.value)
+                onClickRepoMenu(2)
+                Timer().schedule(500) {
+                    onClickRepoMenu(RepoPage.EMOTES.value)
+                }
             } else {
                 if (isDrawerActive) {
                     closeRepo()
                     viewModel.deselectAllRepos()
                     closeDrawer()
+                    onClickRepoMenu(2)
+                    Timer().schedule(500) {
+                        onClickRepoMenu(RepoPage.EMOTES.value)
+                    }
                 } else {
                     openDrawer()
                 }
@@ -67,6 +92,8 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
     }
     val shareIntent = Intent.createChooser(sendIntent, null)
     val context = LocalContext.current
+    val imageLoader = context.imageLoader
+    val interactionSource = remember { MutableInteractionSource() }
 
     if (selectedRepo != null) {
         Column(
@@ -84,6 +111,15 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
                             }
                         }
                     }
+                )
+                .clickable(
+                    onClick = {
+                        if (isDrawerActive) {
+                            closeDrawer()
+                        }
+                    },
+                    interactionSource = interactionSource,
+                    indication = null
                 )
         ) {
             TopBarRepo(
@@ -128,10 +164,12 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
                                         }
                                     }
                                 }
-                                if (repoMenu == RepoPage.STICKERS.value) {
-                                    Text(text = "${selectedRepo.stickers?.size} Stickers", fontWeight = FontWeight.Light, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
-                                } else {
-                                    Text(text = "${selectedRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
+                                if (repoMenu != 2) {
+                                    if (repoMenu == RepoPage.STICKERS.value) {
+                                        Text(text = "${selectedRepo.stickers?.size} Stickers", fontWeight = FontWeight.Light, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
+                                    } else {
+                                        Text(text = "${selectedRepo.emotes.size} Emotes", fontWeight = FontWeight.Light, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
+                                    }
                                 }
                             }
                         }
@@ -139,7 +177,37 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
                 }
                 if (selectedRepo.stickers != null) {
                     item(span = { GridItemSpan(5) }) {
-                        Picker(repoMenu = repoMenu, onClickRepoMenu = { value -> onClickRepoMenu(value) })
+                        Picker(
+                            repoMenu = repoMenu,
+                            onClickRepoMenu = {
+                                value ->
+                                onClickRepoMenu(2)
+                                Timer().schedule(timerTask {
+                                    onClickRepoMenu(value)
+                                }, 500)
+                                if (value == RepoPage.STICKERS.value) {
+                                    for (emote in selectedRepo.emotes) {
+                                        var url = selectedRepo.url + selectedRepo.path + '/' + emote.name + "." + emote.type
+                                        imageLoader.diskCache?.remove(url)
+                                        imageLoader.memoryCache?.remove(MemoryCache.Key(url))
+                                    }
+                                }
+                                if (value == RepoPage.EMOTES.value) {
+                                    for (sticker in selectedRepo.stickers) {
+                                        var url = selectedRepo.url + selectedRepo.stickerPath + '/' + sticker.name + "." + sticker.type
+                                        imageLoader.diskCache?.remove(url)
+                                        imageLoader.memoryCache?.remove(MemoryCache.Key(url))
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+                if (repoMenu == 2) {
+                    item(span = { GridItemSpan(5) }) {
+                        Box(modifier = Modifier.width(30.dp).height(30.dp).padding(50.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MaterialTheme.colors.onPrimary)
+                        }
                     }
                 }
                 if (repoMenu == RepoPage.EMOTES.value) {
@@ -297,7 +365,25 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
                                                 viewModel.addFrequentlyUsedSticker(
                                                     sticker = FrequentlyUsedStickersTable(stickerURL = stickerURL)
                                                 )
-                                                clipboardManager.setText(AnnotatedString(stickerURL))
+                                                context.imageLoader.diskCache?.get(stickerURL)?.use { snapshot ->
+                                                    val imageFile = snapshot.data.toFile()
+                                                    val mClipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                                                    val values = ContentValues().apply {
+                                                        put(MediaStore.MediaColumns.DATA, imageFile.absolutePath)
+                                                        put(MediaStore.MediaColumns.DISPLAY_NAME, "NitrolessEmote")
+                                                        put(MediaStore.MediaColumns.MIME_TYPE, "image/webp")
+                                                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
+                                                    }
+                                                    val resolver = context.contentResolver
+                                                    val imageURI = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                                                    val clipData = ClipData.newUri(resolver, "Nitroless Emote", imageURI)
+                                                    resolver.openOutputStream(imageURI!!)?.use {
+                                                        if (!BitmapFactory.decodeFile(imageFile.path).compress(
+                                                                Bitmap.CompressFormat.WEBP, 100, it))
+                                                            throw IOException("Failed to save bitmap.")
+                                                    } ?: throw IOException("Failed to open output stream.")
+                                                    mClipboard.setPrimaryClip(clipData)
+                                                }
                                                 Toast.makeText(
                                                     context,
                                                     "Copied Sticker",
@@ -344,10 +430,28 @@ fun Repo(isDrawerActive: Boolean, openDrawer: () -> Unit, closeDrawer: () -> Uni
                                                 viewModel.addFrequentlyUsedSticker(
                                                     sticker = FrequentlyUsedStickersTable(stickerURL = stickerURL)
                                                 )
-                                                clipboardManager.setText(AnnotatedString(stickerURL))
+                                                context.imageLoader.diskCache?.get(stickerURL)?.use { snapshot ->
+                                                    val imageFile = snapshot.data.toFile()
+                                                    val mClipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                                                    val values = ContentValues().apply {
+                                                        put(MediaStore.MediaColumns.DATA, imageFile.absolutePath)
+                                                        put(MediaStore.MediaColumns.DISPLAY_NAME, "NitrolessEmote")
+                                                        put(MediaStore.MediaColumns.MIME_TYPE, "image/webp")
+                                                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
+                                                    }
+                                                    val resolver = context.contentResolver
+                                                    val imageURI = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                                                    val clipData = ClipData.newUri(resolver, "Nitroless Emote", imageURI)
+                                                    resolver.openOutputStream(imageURI!!)?.use {
+                                                        if (!BitmapFactory.decodeFile(imageFile.path).compress(
+                                                                Bitmap.CompressFormat.WEBP, 100, it))
+                                                            throw IOException("Failed to save bitmap.")
+                                                    } ?: throw IOException("Failed to open output stream.")
+                                                    mClipboard.setPrimaryClip(clipData)
+                                                }
                                                 Toast.makeText(
                                                     context,
-                                                    "Copied Emote - ${sticker.name}",
+                                                    "Copied Sticker - ${sticker.name}",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }
